@@ -4,10 +4,19 @@
 #include "imgconvert.h"
 #include "imgthresholding.h"
 
-class Img: public virtual ImgConvert, public virtual ImgThresholding
+template <typename T>
+class Img: public virtual ImgConvert<T>, public virtual ImgThresholding<T>
 {
 public:
     Img();
 };
+
+
+template <typename T>
+Img<T>::Img()
+{
+
+}
+
 
 #endif // IMG_H

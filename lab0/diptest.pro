@@ -19,8 +19,8 @@ SOURCES += \
     img.cpp \
     imgconvert.cpp \
     imgdata.cpp \
+    imgplot.cpp \
     imgthresholding.cpp \
-    imgwidget.cpp \
     main.cpp \
     widget.cpp
 
@@ -28,8 +28,8 @@ HEADERS += \
     img.h \
     imgconvert.h \
     imgdata.h \
+    imgplot.h \
     imgthresholding.h \
-    imgwidget.h \
     widget.h
 
 FORMS += \

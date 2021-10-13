@@ -1,35 +1,126 @@
 #ifndef IMGDATA_H
 #define IMGDATA_H
 
-// 约定：变量名小写字母下划线分隔，方法名小写开头驼峰不标注类型信息，类名大写开头，形参与成员变量同名时形参加下划线前缀
-// 涉及颜色分量的整型数据用 stdint 类型，其它用普通 int
+// 请勿在本类中使用任何平台相关类型
 
-// 原则：ImgData 是管理图像数据的“核心”实体类，必须与框架无关，因此禁止在该类的声明和实现中使用框架/平台依赖的类型
-// 原则：所有子类必须保证 sizeof(data)=width*height，width,height 对用户是只读的
 
 #include <stdint.h>
+#include <string>
+#include <QDebug>
 
+template <typename T>
 class ImgData
 {
 protected:
+    // 所有子类必须保证 sizeof(data)=width*height，width,height 对用户是只读的
     int width;
     int height;
-    uint8_t* data;
-    // 约定：GRAY8，offset=(y*w+x)+0，不作对齐处理
+    uint8_t* data; // 约定：GRAY8，offset=(y*w+x)+0，不作对齐处理
     bool allocate();
     bool free();
 public:
     ImgData();
+    ImgData(int width_,int height_);
     ImgData(const ImgData& img);
     ImgData operator = (const ImgData& img);
-    ~ImgData();
-
-//    void setWidth(int _width);
-//    void setHeight(int _height);
+    virtual ~ImgData();
     int getWidth();
     int getHeight();
     void setPixel(int x,int y,uint8_t c);
     uint8_t getPixel(int x,int y);
 };
+
+
+template <typename T>
+bool ImgData<T>::allocate()
+{
+    if(data)
+    {
+        free();
+    }
+    data=new uint8_t[width*height];
+    if(data)
+    {
+        return true;
+    }
+    return false;
+}
+
+template <typename T>
+bool ImgData<T>::free()
+{
+    if(data)
+    {
+        delete[] data;
+        return true;
+    }
+    return false;
+}
+
+template <typename T>
+ImgData<T>::ImgData(): width(0), height(0), data(nullptr)
+{
+
+}
+
+template <typename T>
+ImgData<T>::ImgData(int width_, int height_): width(width_), height(height_)
+{
+    allocate();
+}
+
+template <typename T>
+ImgData<T>::ImgData(const ImgData& img): data(nullptr)
+{
+    width=img.width;
+    height=img.height;
+    allocate();
+    memcpy(data,img.data,width*height);
+}
+
+template <typename T>
+ImgData<T> ImgData<T>::operator=(const ImgData<T>& img)
+{
+    width=img.width;
+    height=img.height;
+    allocate();
+    memcpy(data,img.data,width*height);
+    return *this;
+}
+
+template <typename T>
+ImgData<T>::~ImgData()
+{
+    free();
+}
+
+template <typename T>
+int ImgData<T>::getWidth()
+{
+    return width;
+}
+
+template <typename T>
+int ImgData<T>::getHeight()
+{
+    return height;
+}
+
+template <typename T>
+void ImgData<T>::setPixel(int x, int y, uint8_t c)
+{
+    if(x<0 || x>=width || y<0 || y>height) throw("out of bound.");
+    uint8_t* pixel=data+(y*width+x);
+    pixel[0]=c;
+}
+
+template <typename T>
+uint8_t ImgData<T>::getPixel(int x, int y)
+{
+    if(x<0 || x>=width || y<0 || y>height) throw("out of bound.");
+    uint8_t* pixel=data+(y*width+x);
+    return pixel[0];
+}
+
 
 #endif // IMGDATA_H
