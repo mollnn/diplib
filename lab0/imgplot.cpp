@@ -4,10 +4,11 @@
 
 ImgPlot::ImgPlot(QWidget *parent) : QWidget(parent)
 {
-    label=new QLabel(this);
+    label_=new QLabel(this);
 }
 
 void ImgPlot::imshow(const QImage& img)
 {
-    label->setPixmap(QPixmap::fromImage(img.copy()));
+    label_->setPixmap(QPixmap::fromImage(img.copy()));
+    this->setFixedSize(img.size());
 }

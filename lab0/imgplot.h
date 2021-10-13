@@ -9,7 +9,7 @@ class ImgPlot : public QWidget
 {
     Q_OBJECT
 private:
-    QLabel* label;
+    QLabel* label_;
 public:
     explicit ImgPlot(QWidget *parent = nullptr);
     void imshow(const QImage& img);

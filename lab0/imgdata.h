@@ -2,10 +2,6 @@
 #define IMGDATA_H
 
 // 请勿在本类中使用任何平台相关类型
-
-
-#include <stdint.h>
-#include <string>
 #include <QDebug>
 
 template <typename T>
@@ -13,33 +9,36 @@ class ImgData
 {
 protected:
     // 所有子类必须保证 sizeof(data)=width*height，width,height 对用户是只读的
-    int width;
-    int height;
-    uint8_t* data; // 约定：GRAY8，offset=(y*w+x)+0，不作对齐处理
+    int width_;
+    int height_;
+    T range_; // value in [0, range) 简单起见仅考虑整数
+    T* data_;
     bool allocate();
     bool free();
 public:
     ImgData();
-    ImgData(int width_,int height_);
+    ImgData(int width_,int height_,T range_=256);
     ImgData(const ImgData& img);
     ImgData operator = (const ImgData& img);
     virtual ~ImgData();
-    int getWidth();
-    int getHeight();
-    void setPixel(int x,int y,uint8_t c);
-    uint8_t getPixel(int x,int y);
+    int width();
+    int height();
+    void setPixel(int x,int y,T c);
+    T pixel(int x,int y);
+    void setRange(T range);
+    T range();
 };
 
 
 template <typename T>
 bool ImgData<T>::allocate()
 {
-    if(data)
+    if(data_)
     {
         free();
     }
-    data=new uint8_t[width*height];
-    if(data)
+    data_=new T[width_*height_];
+    if(data_)
     {
         return true;
     }
@@ -49,42 +48,44 @@ bool ImgData<T>::allocate()
 template <typename T>
 bool ImgData<T>::free()
 {
-    if(data)
+    if(data_)
     {
-        delete[] data;
+        delete[] data_;
         return true;
     }
     return false;
 }
 
 template <typename T>
-ImgData<T>::ImgData(): width(0), height(0), data(nullptr)
+ImgData<T>::ImgData(): width_(0), height_(0), range_(256), data_(nullptr)
 {
 
 }
 
 template <typename T>
-ImgData<T>::ImgData(int width_, int height_): width(width_), height(height_)
+ImgData<T>::ImgData(int width_, int height_, T range_): width_(width_), height_(height_), range_(range_)
 {
     allocate();
 }
 
 template <typename T>
-ImgData<T>::ImgData(const ImgData& img): data(nullptr)
+ImgData<T>::ImgData(const ImgData& img): data_(nullptr)
 {
-    width=img.width;
-    height=img.height;
+    width_=img.width_;
+    height_=img.height_;
+    range_=img.range_;
     allocate();
-    memcpy(data,img.data,width*height);
+    memcpy(data_,img.data_,width_*height_);
 }
 
 template <typename T>
 ImgData<T> ImgData<T>::operator=(const ImgData<T>& img)
 {
-    width=img.width;
-    height=img.height;
+    width_=img.width_;
+    height_=img.height_;
+    range_=img.range_;
     allocate();
-    memcpy(data,img.data,width*height);
+    memcpy(data_,img.data_,width_*height_);
     return *this;
 }
 
@@ -95,31 +96,43 @@ ImgData<T>::~ImgData()
 }
 
 template <typename T>
-int ImgData<T>::getWidth()
+int ImgData<T>::width()
 {
-    return width;
+    return width_;
 }
 
 template <typename T>
-int ImgData<T>::getHeight()
+int ImgData<T>::height()
 {
-    return height;
+    return height_;
 }
 
 template <typename T>
-void ImgData<T>::setPixel(int x, int y, uint8_t c)
+void ImgData<T>::setPixel(int x, int y, T c)
 {
-    if(x<0 || x>=width || y<0 || y>height) throw("out of bound.");
-    uint8_t* pixel=data+(y*width+x);
+    if(x<0 || x>=width_ || y<0 || y>height_) throw("out of bound.");
+    T* pixel=data_+(y*width_+x);
     pixel[0]=c;
 }
 
 template <typename T>
-uint8_t ImgData<T>::getPixel(int x, int y)
+T ImgData<T>::pixel(int x, int y)
 {
-    if(x<0 || x>=width || y<0 || y>height) throw("out of bound.");
-    uint8_t* pixel=data+(y*width+x);
+    if(x<0 || x>=width_ || y<0 || y>height_) throw("out of bound.");
+    T* pixel=data_+(y*width_+x);
     return pixel[0];
+}
+
+template <typename T>
+void ImgData<T>::setRange(T range)
+{
+    range_=range;
+}
+
+template <typename T>
+T ImgData<T>::range()
+{
+    return range_;
 }
 
 

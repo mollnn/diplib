@@ -13,18 +13,14 @@ Widget::Widget(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // Read
     Img<uint8_t> img_in;
     img_in.fromQImage(QImage("in.jpg"));
 
-    // Processing
     Img<uint8_t> img_out(img_in);
     img_out.thresholding(128);
 
-    // Save
     img_out.toQImage().save("out.jpg");
 
-    // Display
     ImgPlot* img_plot_in=new ImgPlot(this);
     img_plot_in->imshow(img_in.toQImage());
 
@@ -33,10 +29,10 @@ Widget::Widget(QWidget *parent)
 
     QGridLayout *grid_layout=new QGridLayout;
     grid_layout->addWidget(img_plot_in, 0, 0);
-    grid_layout->addWidget(img_plot_out, 0,1);
+    grid_layout->addWidget(img_plot_out, 0, 1);
     setLayout(grid_layout);
 
-    this->setWindowTitle("DIP Lab Demo");
+    this->setWindowTitle("DIP Lab 0");
 }
 
 Widget::~Widget()
