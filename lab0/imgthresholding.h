@@ -22,7 +22,7 @@ void ImgThresholding<T>::thresholding(T threshold)
 {
     for(int i=0;i<ImgData<T>::width_*ImgData<T>::height_;i++)
     {
-        ImgData<T>::data_[i]=ImgData<T>::data_[i]>=threshold?ImgData<T>::range_-1:0;
+        ImgData<T>::data_[i]=ImgData<T>::data_[i]>=threshold?ImgData<T>::range_:0;
     }
 }
 

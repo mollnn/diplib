@@ -11,13 +11,13 @@ protected:
     // 所有子类必须保证 sizeof(data)=width*height，width,height 对用户是只读的
     int width_;
     int height_;
-    T range_; // value in [0, range) 简单起见仅考虑整数
+    T range_; // value in [0, range] 简单起见仅考虑整数
     T* data_;
     bool allocate();
     bool free();
 public:
     ImgData();
-    ImgData(int width_,int height_,T range_=256);
+    ImgData(int width_,int height_,T range_=255);
     ImgData(const ImgData& img);
     ImgData operator = (const ImgData& img);
     virtual ~ImgData();
@@ -57,7 +57,7 @@ bool ImgData<T>::free()
 }
 
 template <typename T>
-ImgData<T>::ImgData(): width_(0), height_(0), range_(256), data_(nullptr)
+ImgData<T>::ImgData(): width_(0), height_(0), range_(255), data_(nullptr)
 {
 
 }
@@ -75,7 +75,7 @@ ImgData<T>::ImgData(const ImgData& img): data_(nullptr)
     height_=img.height_;
     range_=img.range_;
     allocate();
-    memcpy(data_,img.data_,width_*height_);
+    memcpy(data_,img.data_,sizeof(T)*width_*height_);
 }
 
 template <typename T>
@@ -85,7 +85,7 @@ ImgData<T> ImgData<T>::operator=(const ImgData<T>& img)
     height_=img.height_;
     range_=img.range_;
     allocate();
-    memcpy(data_,img.data_,width_*height_);
+    memcpy(data_,img.data_,sizeof(T)*width_*height_);
     return *this;
 }
 
