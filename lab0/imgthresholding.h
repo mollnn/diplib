@@ -20,9 +20,9 @@ ImgThresholding<T>::ImgThresholding()
 template <typename T>
 void ImgThresholding<T>::thresholding(T threshold)
 {
-    for(int i=0;i<ImgData<T>::width_*ImgData<T>::height_;i++)
+    for(int i=0;i<this->width_*this->height_;i++)
     {
-        ImgData<T>::data_[i]=ImgData<T>::data_[i]>=threshold?ImgData<T>::range_:0;
+        this->data_[i]=this->data_[i]>=threshold?this->range_:0;
     }
 }
 
