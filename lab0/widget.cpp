@@ -14,14 +14,14 @@ Widget::Widget(QWidget *parent)
     ui->setupUi(this);
 
 //    Img<uint8_t> img_in;
-//    img_in.fromQImage(QImage("in.jpg"));
+//    img_in.fromQImage(QImage("in.bmp"));
 
 //    Img<uint8_t> img_out(img_in);
 //    img_out.thresholding(128);
 
 //    img_out.toQImage().save("out.jpg");
 
-    // Gray16 Tester
+//     Gray16 Tester
     Img<uint16_t> img_in;
     img_in.setRange(65535);
     img_in.fromQImage(QImage("16bit_test.tif"));
