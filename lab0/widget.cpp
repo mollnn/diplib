@@ -19,7 +19,6 @@ Widget::Widget(QWidget *parent)
     Img<uint8_t> img_out(img_in);
 
     img_out.toQImage().save("out.jpg");
-    img_in=std::move(img_out);
 
 
 
