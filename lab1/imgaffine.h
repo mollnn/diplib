@@ -1,7 +1,7 @@
 #ifndef IMGAFFINE_H
 #define IMGAFFINE_H
 
-#include "ImgInterpolate.h"
+#include "imginterpolate.h"
 #include "vec3.h"
 #include <cmath>
 

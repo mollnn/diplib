@@ -32,7 +32,6 @@ public:
 
 
 private:
-    Ui::Widget *ui;
     QString filename_in_;
     QString filename_out_;
     Img<uint8_t> img_in_;

@@ -1,14 +1,11 @@
 #include "widget.h"
-#include "ui_widget.h"
 #include "img.h"
 #include "imgplot.h"
 
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::Widget)
 {
-    ui->setupUi(this);
 
     img_plot_in_=new ImgPlot(this);
     img_plot_out_=new ImgPlot(this);
@@ -72,7 +69,6 @@ Widget::Widget(QWidget *parent)
 
 Widget::~Widget()
 {
-    delete ui;
 }
 
 
