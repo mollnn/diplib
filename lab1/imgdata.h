@@ -54,7 +54,7 @@ ImgData<T>::ImgData(): width_(0), height_(0), range_(255), data_(nullptr)
 }
 
 template <typename T>
-ImgData<T>::ImgData(int width_, int height_, T range_): width_(width_), height_(height_), range_(range_)
+ImgData<T>::ImgData(int width_, int height_, T range_): width_(width_), height_(height_), range_(range_), data_(nullptr)
 {
     _allocate();
 }
@@ -72,12 +72,12 @@ ImgData<T>::ImgData(ImgData&& img) noexcept : width_(img.width_), height_(img.he
     // Old img has been Stolen
     img.width_ = 0;
     img.height_ = 0;
-    img.data = nullptr;
+    img.data_ = nullptr;
 }
 
 template <typename T>
 ImgData<T>& ImgData<T>::operator=(const ImgData<T>& img)
-{qDebug()<<"ImgData<T> ImgData<T>::operator=(const ImgData<T>& img)";
+{
     width_=img.width_;
     height_=img.height_;
     range_=img.range_;
@@ -88,7 +88,7 @@ ImgData<T>& ImgData<T>::operator=(const ImgData<T>& img)
 
 template <typename T>
 ImgData<T>& ImgData<T>::operator=(ImgData<T>&& img) noexcept
-{qDebug()<<"ImgData<T> ImgData<T>::operator=(ImgData<T>&& img) noexcept"<<" "<<this;
+{
     // Old img has been Stolen
     width_=img.width_;
     height_=img.height_;

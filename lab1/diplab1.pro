@@ -18,13 +18,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     imgplot.cpp \
     main.cpp \
+    vec3.cpp \
     widget.cpp
 
 HEADERS += \
     img.h \
+    imgaffine.h \
     imgconvert.h \
     imgdata.h \
+    imginterpolate.h \
     imgplot.h \
+    vec3.h \
     widget.h
 
 FORMS += \

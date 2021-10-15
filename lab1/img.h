@@ -13,16 +13,21 @@
 /////////////////////////////////
 
 #include "imgconvert.h"
+#include "ImgAffine.h"
 
 template <typename T>
-class Img: public virtual ImgConvert<T>
+class Img: public virtual ImgConvert<T>, public virtual ImgAffine<T>
 {
 public:
     Img() {}
     Img(const Img& img): ImgData<T>(img) {}
     Img(Img&& img): ImgData<T>(img) {}
+    Img(const ImgData<T>& img): ImgData<T>(img) {}
+    Img(ImgData<T>&& img): ImgData<T>(img) {}
     Img& operator =(const Img& img) {ImgData<T>::operator=(img); return *this;}
     Img& operator =(Img&& img) {ImgData<T>::operator=(std::move(img)); return *this;}
+    Img& operator =(const ImgData<T>& img) {ImgData<T>::operator=(img); return *this;}
+    Img& operator =(ImgData<T>&& img) {ImgData<T>::operator=(std::move(img)); return *this;}
 };
 
 
