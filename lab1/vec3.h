@@ -10,7 +10,7 @@ struct mat3;
 struct vec3
 {
     double x, y, z;
-    double& operator[](int id);
+    double &operator[](int id);
     double operator[](int id) const;
     vec3 operator+(const vec3 &rhs) const;
     vec3 operator-(const vec3 &rhs) const;
@@ -30,20 +30,18 @@ vec3 operator*(double lhs, const vec3 &rhs);
 struct mat3
 {
     vec3 x, y, z;
-    vec3& operator[](int id);
+    vec3 &operator[](int id);
     vec3 operator[](int id) const;
-    vec3& row(int id);
-    vec3 row(int id) const ;
-    vec3 col(int id) const ;
-    mat3 operator+(const mat3 &rhs) const ;
+    vec3 &row(int id);
+    vec3 row(int id) const;
+    vec3 col(int id) const;
+    mat3 operator+(const mat3 &rhs) const;
     mat3 operator-(const mat3 &rhs) const;
     mat3 operator*(const mat3 &rhs) const;
-    mat3& operator *= (const mat3& rhs);
+    mat3 &operator*=(const mat3 &rhs);
     vec3 operator*(const vec3 &rhs) const;
     mat3 operator*(double rhs) const;
     mat3 operator/(double rhs) const;
 };
-
-
 
 #endif // VEC3_H
