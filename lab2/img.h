@@ -13,10 +13,9 @@
 /////////////////////////////////
 
 #include "imgconvert.h"
-#include "imgaffine.h"
 
 template <typename T>
-class Img : public virtual ImgConvert<T>, public virtual ImgAffine<T>
+class Img : public virtual ImgConvert<T>
 {
 public:
     Img() {}

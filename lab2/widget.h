@@ -37,8 +37,8 @@ public:
 private:
     QString filename_in_;
     QString filename_out_;
-    Img<uint8_t> img_in_;
-    Img<uint8_t> img_out_;
+    Img<uint16_t> img_in_;
+    Img<uint16_t> img_out_;
     int anchor_x_;
     int anchor_y_;
     int scale_precent_;
@@ -47,26 +47,6 @@ private:
     int rotate_degree_;
     ImgPlot *img_plot_in_;
     ImgPlot *img_plot_out_;
-    QLabel *label_anchor_x_;
-    QLabel *label_anchor_y_;
-    QLabel *label_prescale_;
-    QLabel *label_translate_x_;
-    QLabel *label_translate_y_;
-    QLabel *label_rotate_;
-
-    QSlider *slider_anchor_x_;
-    QSlider *slider_anchor_y_;
-    QSlider *slider_prescale_;
-    QSlider *slider_translate_x_;
-    QSlider *slider_translate_y_;
-    QSlider *slider_rotate_;
-
-    QSpinBox *spinbox_anchor_x_;
-    QSpinBox *spinbox_anchor_y_;
-    QSpinBox *spinbox_prescale_;
-    QSpinBox *spinbox_translate_x_;
-    QSpinBox *spinbox_translate_y_;
-    QSpinBox *spinbox_rotate_;
 
     QPushButton *button_open_;
     QPushButton *button_save_;
