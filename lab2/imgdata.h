@@ -15,7 +15,6 @@ protected:
     T *data_;
     void _allocate();
     void _free();
-
     T _getPixelWithDefault(int x, int y, T default_value = 0);
 
 public:
@@ -33,6 +32,8 @@ public:
     T pixel(int x, int y) const;
     void setRange(T range);
     T range() const;
+    void clear();
+    T* bits();
 };
 
 template <typename T>
@@ -161,6 +162,12 @@ template <typename T>
 T ImgData<T>::range() const
 {
     return range_;
+}
+
+template <typename T>
+T* ImgData<T>::bits()
+{
+    return data_;
 }
 
 #endif // IMGDATA_H

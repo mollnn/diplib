@@ -70,7 +70,7 @@ void Widget::_render()
     int src_width = img_in_.width();
     int src_height = img_in_.height();
 
-    img_out_=img_in_.crop((-view_width+src_width)/2+view_offset_x_,
+    img_out_=img_in_.cropFast((-view_width+src_width)/2+view_offset_x_,
                           (-view_height+src_height)/2+view_offset_y_,
                           view_width, view_height);
     img_plot_box_->imshow(img_out_.toQImage());

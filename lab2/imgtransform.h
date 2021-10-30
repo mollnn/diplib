@@ -2,11 +2,12 @@
 #define IMGAFFINE_H
 
 #include "imgalginterpolate.h"
+#include "imgalgcropfast.h"
 #include "mathheader.h"
 #include <cmath>
 
 template <typename T>
-class ImgTransform : public virtual ImgAlgInterpolate<T>
+class ImgTransform : public virtual ImgAlgInterpolate<T>, public virtual ImgAlgCropFast<T>
 {
 public:
     ImgTransform() {}
@@ -44,6 +45,10 @@ public:
         return transformTRS(-x0, -y0, rotation, scale, this->width_/2, this->height_/2, target_width, target_height);
     }
 
+    ImgData<T> cropFast(int x0, int y0, int target_width, int target_height)
+    {
+        return this->_cropFast(x0,y0,target_width,target_height);
+    }
 
 };
 

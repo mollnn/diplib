@@ -8,7 +8,7 @@ class ImgAlgLinearMapper: public virtual ImgData<T>
 {
 public:
     ImgAlgLinearMapper(){}
-
+protected:
     static T pixelLinearMapSimple(T pixel, T target_range, T source_range)
     {
         // For example, 65535 -> 255:
@@ -25,7 +25,7 @@ public:
         delta /= source_max - source_min + 1;
         return delta + target_min;
     }
-
+public:
     ImgData<T> linearMapSimple(T target_range, T source_range)
     {
         ImgData<T> result(this->width_, this->height_, target_range);
