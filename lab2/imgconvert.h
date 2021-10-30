@@ -81,7 +81,7 @@ QImage ImgConvert<T>::toQImage()
         {
             for (int j = 0; j < this->width_; j++)
             {
-                tmp_data[i * ((this->width_ + 1) / 2 * 2) + j] = ImgAlgLinearMap<T>::pixelLinearMapSimple(this->data_[i * this->width_ + j], type_max, range_max);
+                tmp_data[i * ((this->width_ + 1) / 2 * 2) + j] = ImgAlgLinearMap<T>::_pixelLinearMapSimple(this->data_[i * this->width_ + j], type_max, range_max);
             }
         }
         QImage result(

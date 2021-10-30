@@ -48,6 +48,9 @@ private:
 
     ImgPlotBox *img_plot_box_;
 
+    QLabel *label_gray_window_breadth_;
+    QLabel *label_gray_window_position_;
+
     QSlider *slider_gray_window_breadth_;
     QSlider *slider_gray_window_position_;
 

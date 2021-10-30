@@ -20,7 +20,7 @@ public:
             {
                 vec3 target_pos = {1.0 * j, 1.0 * i, 1.0};
                 vec3 source_pos = transform_matrix * target_pos;
-                result.setPixel(j, i, this->interpolateBilinear(source_pos.x, source_pos.y));
+                result.setPixel(j, i, this->_interpolateBilinear(source_pos.x, source_pos.y));
             }
         }
         return result;

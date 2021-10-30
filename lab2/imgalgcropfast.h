@@ -48,9 +48,6 @@ protected:
             return result;
         }
 
-        qDebug()<<source_x_begin<<" "<<source_x_end<<"  "<<target_x_begin<<" "<<target_x_end;
-
-
         for(int i=0;i<target_height;i++)
         {
             int y1=i+y0;
