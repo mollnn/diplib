@@ -40,13 +40,24 @@ private:
     QString filename_in_;
     QString filename_out_;
     Img<uint16_t> img_in_;
-    Img<uint16_t> img_out_;
+    Img<uint8_t> img_out_;
     int view_offset_x_;
     int view_offset_y_;
+    int gray_window_breadth_;
+    int gray_window_position_;
+
     ImgPlotBox *img_plot_box_;
+
+    QSlider *slider_gray_window_breadth_;
+    QSlider *slider_gray_window_position_;
+
+    QSpinBox *spinbox_gray_window_breadth_;
+    QSpinBox *spinbox_gray_window_position_;
 
     QPushButton *button_open_;
     QPushButton *button_save_;
+
+
 
     QGridLayout *grid_layout_;
 

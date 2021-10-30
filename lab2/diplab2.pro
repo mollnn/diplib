@@ -27,9 +27,10 @@ HEADERS += \
     img.h \
     imgalgcropfast.h \
     imgalginterpolate.h \
-    imgalglinearmapper.h \
+    imgalglinearmap.h \
     imgconvert.h \
     imgdata.h \
+    imggraywindow.h \
     imgplot.h \
     imgplotbox.h \
     imgtransform.h \

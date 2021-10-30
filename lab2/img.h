@@ -14,9 +14,10 @@
 
 #include "imgconvert.h"
 #include "imgtransform.h"
+#include "imggraywindow.h"
 
 template <typename T>
-class Img : public virtual ImgConvert<T>, public virtual ImgTransform<T>
+class Img : public virtual ImgConvert<T>, public virtual ImgTransform<T>, public virtual ImgGrayWindow<T>
 {
 public:
     Img() {}

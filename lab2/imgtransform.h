@@ -42,11 +42,13 @@ public:
 
     ImgData<T> crop(double x0, double y0, int target_width, int target_height, double rotation = 0, double scale = 1)
     {
+        // 利用仿射变换实现，效率较低，支持扩展功能
         return transformTRS(-x0, -y0, rotation, scale, this->width_/2, this->height_/2, target_width, target_height);
     }
 
     ImgData<T> cropFast(int x0, int y0, int target_width, int target_height)
     {
+        // 逐行拷贝，效率高，功能单纯
         return this->_cropFast(x0,y0,target_width,target_height);
     }
 

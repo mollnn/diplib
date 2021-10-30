@@ -19,7 +19,7 @@ protected:
 
 public:
     ImgData();
-    ImgData(int width_, int height_, T range_ = 255);
+    ImgData(int width_, int height_, T range_);
     ImgData(const ImgData &img);
     ImgData(ImgData &&img) noexcept;
     ImgData &operator=(const ImgData &img);

@@ -2,13 +2,13 @@
 #define IMGCONVERT_H
 
 #include "imgdata.h"
-#include "imgalglinearmapper.h"
+#include "imgalglinearmap.h"
 #include <QImage>
 #include <QFile>
 #include <QDataStream>
 
 template <typename T>
-class ImgConvert : public virtual ImgData<T>, public virtual ImgAlgLinearMapper<T>
+class ImgConvert : public virtual ImgData<T>, public virtual ImgAlgLinearMap<T>
 {
 public:
     ImgConvert();
@@ -81,7 +81,7 @@ QImage ImgConvert<T>::toQImage()
         {
             for (int j = 0; j < this->width_; j++)
             {
-                tmp_data[i * ((this->width_ + 1) / 2 * 2) + j] = ImgAlgLinearMapper<T>::pixelLinearMapSimple(this->data_[i * this->width_ + j], type_max, range_max);
+                tmp_data[i * ((this->width_ + 1) / 2 * 2) + j] = ImgAlgLinearMap<T>::pixelLinearMapSimple(this->data_[i * this->width_ + j], type_max, range_max);
             }
         }
         QImage result(
