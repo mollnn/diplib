@@ -1,13 +1,19 @@
 #include "widget.h"
 #include "img.h"
-#include "imgplot.h"
+#include "imgplotbox.h"
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
 {
 
-    img_plot_in_ = new ImgPlot(this);
-    img_plot_out_ = new ImgPlot(this);
+    img_plot_box_ = new ImgPlotBox(this);
+
+    connect(img_plot_box_, &ImgPlotBox::dragSignal, [&](int dx, int dy)
+    {
+        this->view_offset_x_ -= dx;
+        this->view_offset_y_ -= dy;
+        this->_render();
+    });
 
     button_open_ = new QPushButton(this);
     button_open_->setText("打开文件");
@@ -17,7 +23,7 @@ Widget::Widget(QWidget *parent)
 
     connect(button_open_, &QPushButton::clicked, [&]()
             {
-                filename_in_ = QFileDialog::getOpenFileName(this, tr("Open Image"), "/home/jana", tr("Image Files (*.bmp *.jpg *.gif *.tif *.png)"));
+                filename_in_ = QFileDialog::getOpenFileName(this, tr("Open Image"), "/home/jana", tr("Raw Image Files (*.raw)"));
                 this->_loadImage();
             });
 
@@ -59,8 +65,15 @@ void Widget::_bindValueEvents(int *value, QSlider *slider, QSpinBox *spinbox)
 
 void Widget::_render()
 {
-    img_plot_in_->imshow(img_in_.toQImage());
-    img_plot_out_->imshow(img_out_.toQImage());
+    int view_width = img_plot_box_->width();
+    int view_height = img_plot_box_->height();
+    int src_width = img_in_.width();
+    int src_height = img_in_.height();
+
+    img_out_=img_in_.crop((-view_width+src_width)/2+view_offset_x_,
+                          (-view_height+src_height)/2+view_offset_y_,
+                          view_width, view_height);
+    img_plot_box_->imshow(img_out_.toQImage());
     this->_reLayout();
 }
 
@@ -68,22 +81,11 @@ void Widget::_loadImage()
 {
     try
     {
-        QImage tmp = QImage(filename_in_);
-        if (tmp.sizeInBytes() == 0)
-        {
-            qDebug() << "fail to load or empty image.";
-            return;
-        }
-        else
-        {
-            img_in_.setRange(65535);
-            img_in_.fromQImage(tmp);
-        }
-        img_out_ = img_in_;
-        img_out_ = img_out_.linearMapSimple(65535, 255);
-
+        img_in_.fromRaw(filename_in_);
         this->_render();
         this->_reLayout();
+        view_offset_x_=0;
+        view_offset_y_=0;
     }
     catch (...)
     {
@@ -105,9 +107,15 @@ void Widget::_saveImage()
 
 void Widget::_reLayout()
 {
-    grid_layout_->addWidget(img_plot_in_, 0, 0, 1, 3);
-    grid_layout_->addWidget(img_plot_out_, 0, 3, 1, 3);
-    grid_layout_->addWidget(button_open_, 7, 1, 1, 1);
-    grid_layout_->addWidget(button_save_, 7, 4, 1, 1);
+    grid_layout_->addWidget(img_plot_box_, 0, 0, 1, 2);
+    grid_layout_->addWidget(button_open_, 1, 0, 1, 1);
+
+    grid_layout_->addWidget(button_save_, 1, 1, 1, 1);
     setLayout(grid_layout_);
+}
+
+void Widget::resizeEvent(QResizeEvent * event)
+{
+    this->_reLayout();
+    this->_render();
 }

@@ -13,9 +13,10 @@
 /////////////////////////////////
 
 #include "imgconvert.h"
+#include "imgtransform.h"
 
 template <typename T>
-class Img : public virtual ImgConvert<T>
+class Img : public virtual ImgConvert<T>, public virtual ImgTransform<T>
 {
 public:
     Img() {}
@@ -23,6 +24,7 @@ public:
     Img(Img &&img) : ImgData<T>(img) {}
     Img(const ImgData<T> &img) : ImgData<T>(img) {}
     Img(ImgData<T> &&img) : ImgData<T>(img) {}
+    Img(int width, int height, T range): ImgData<T>(width,height,range) {}
     Img &operator=(const Img &img)
     {
         ImgData<T>::operator=(img);

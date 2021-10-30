@@ -16,6 +16,8 @@ protected:
     void _allocate();
     void _free();
 
+    T _getPixelWithDefault(int x, int y, T default_value = 0);
+
 public:
     ImgData();
     ImgData(int width_, int height_, T range_ = 255);
@@ -137,6 +139,14 @@ T ImgData<T>::pixel(int x, int y) const
     if (x < 0 || x >= width_ || y < 0 || y > height_)
         throw("out of bound.");
     return data_[y * width_ + x];
+}
+
+template <typename T>
+T ImgData<T>::_getPixelWithDefault(int x, int y, T default_value)
+{
+    if (x >= 0 && x < this->width_ && y >= 0 && y < this->height_)
+        return this->pixel(x, y);
+    return default_value;
 }
 
 template <typename T>

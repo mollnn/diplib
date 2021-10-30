@@ -1,13 +1,13 @@
-#ifndef IMGLINEARMAPPER_H
-#define IMGLINEARMAPPER_H
+#ifndef IMGALGLINEARMAPPER_H
+#define IMGALGLINEARMAPPER_H
 
 #include "imgdata.h"
 
 template <typename T>
-class ImgLinearMapper: public virtual ImgData<T>
+class ImgAlgLinearMapper: public virtual ImgData<T>
 {
 public:
-    ImgLinearMapper(){}
+    ImgAlgLinearMapper(){}
 
     static T pixelLinearMapSimple(T pixel, T target_range, T source_range)
     {
@@ -53,4 +53,4 @@ public:
     }
 };
 
-#endif // IMGLINEARMAPPER_H
+#endif // IMGALGLINEARMAPPER_H

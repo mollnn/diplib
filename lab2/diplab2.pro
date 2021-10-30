@@ -17,15 +17,25 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     imgplot.cpp \
+    imgplotbox.cpp \
     main.cpp \
+    mat3.cpp \
+    vec3.cpp \
     widget.cpp
 
 HEADERS += \
     img.h \
+    imgalgcropfast.h \
+    imgalginterpolate.h \
+    imgalglinearmapper.h \
     imgconvert.h \
     imgdata.h \
-    imglinearmapper.h \
     imgplot.h \
+    imgplotbox.h \
+    imgtransform.h \
+    mat3.h \
+    mathheader.h \
+    vec3.h \
     widget.h
 
 

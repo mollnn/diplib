@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <cstdint>
 #include "img.h"
-#include "imgplot.h"
+#include "imgplotbox.h"
 #include <QGridLayout>
 #include <QDebug>
 #include <QLabel>
@@ -30,6 +30,8 @@ class Widget : public QWidget
     void _saveImage();
     void _reLayout();
 
+    void resizeEvent(QResizeEvent * event);
+
 public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
@@ -39,18 +41,15 @@ private:
     QString filename_out_;
     Img<uint16_t> img_in_;
     Img<uint16_t> img_out_;
-    int anchor_x_;
-    int anchor_y_;
-    int scale_precent_;
-    int translate_x_;
-    int translate_y_;
-    int rotate_degree_;
-    ImgPlot *img_plot_in_;
-    ImgPlot *img_plot_out_;
+    int view_offset_x_;
+    int view_offset_y_;
+    ImgPlotBox *img_plot_box_;
 
     QPushButton *button_open_;
     QPushButton *button_save_;
 
     QGridLayout *grid_layout_;
+
+
 };
 #endif // WIDGET_H
