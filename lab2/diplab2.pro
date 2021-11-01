@@ -1,8 +1,11 @@
-QT       += core gui
+QT       += core gui testlib
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
+
+QMAKE_CXXFLAGS += -fopenmp
+LIBS += -fopenmp
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -19,6 +22,7 @@ SOURCES += \
     AffineTransform.cpp \
     QImagePlot.cpp \
     QImagePlotBox.cpp \
+    Tester.cpp \
     main.cpp \
     mat3.cpp \
     vec3.cpp \
@@ -36,6 +40,7 @@ HEADERS += \
     ImgTransform.h \
     QImagePlot.h \
     QImagePlotBox.h \
+    Tester.h \
     mat3.h \
     mathheader.h \
     vec3.h \

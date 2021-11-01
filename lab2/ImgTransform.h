@@ -18,6 +18,7 @@ protected:
     {
         mat3 transform_matrix_inverse = transform_matrix.inverse();
         ImgData<T> result(target_width, target_height, this->range_);
+#pragma omp parallel for
         for (int i = 0; i < result.height(); i++)
         {
             for (int j = 0; j < result.width(); j++)

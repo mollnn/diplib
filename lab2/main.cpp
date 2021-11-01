@@ -12,3 +12,7 @@ int main(int argc, char *argv[])
     w.show();
     return a.exec();
 }
+
+//#include "Tester.h"
+
+//QTEST_APPLESS_MAIN(Test1)
