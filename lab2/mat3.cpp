@@ -1,5 +1,10 @@
 #include "mat3.h"
 
+mat3::mat3() {}
+mat3::mat3(vec3 a, vec3 b,vec3 c): x(a),y(b),z(c) {}
+mat3::mat3(double ax, double ay, double az, double bx, double by, double bz,double cx,double cy,double cz):
+    x(ax,ay,az), y(bx,by,bz), z(cx,cy,cz) {}
+
 vec3 &mat3::operator[](int id) { return id == 0 ? x : id == 1 ? y
                                                               : z; }
 vec3 mat3::operator[](int id) const { return id == 0 ? x : id == 1 ? y
@@ -10,10 +15,10 @@ vec3 mat3::col(int id) const { return {x[id], y[id], z[id]}; }
 mat3 mat3::operator+(const mat3 &rhs) const { return {x + rhs.x, y + rhs.y, z + rhs.z}; }
 mat3 mat3::operator-(const mat3 &rhs) const { return {x - rhs.x, y - rhs.y, z - rhs.z}; }
 mat3 mat3::operator*(const mat3 &rhs) const { return {
-    {this->row(0).dot(rhs.col(0)), this->row(0).dot(rhs.col(1)), this->row(0).dot(rhs.col(2))},
-    {this->row(1).dot(rhs.col(0)), this->row(1).dot(rhs.col(1)), this->row(1).dot(rhs.col(2))},
-    {this->row(2).dot(rhs.col(0)), this->row(2).dot(rhs.col(1)), this->row(2).dot(rhs.col(2))},
-}; }
+        {this->row(0).dot(rhs.col(0)), this->row(0).dot(rhs.col(1)), this->row(0).dot(rhs.col(2))},
+        {this->row(1).dot(rhs.col(0)), this->row(1).dot(rhs.col(1)), this->row(1).dot(rhs.col(2))},
+        {this->row(2).dot(rhs.col(0)), this->row(2).dot(rhs.col(1)), this->row(2).dot(rhs.col(2))},
+    }; }
 mat3 &mat3::operator*=(const mat3 &rhs) { return *this = *this * rhs; }
 vec3 mat3::operator*(const vec3 &rhs) const
 {
@@ -21,3 +26,57 @@ vec3 mat3::operator*(const vec3 &rhs) const
 }
 mat3 mat3::operator*(double rhs) const { return {x * rhs, y * rhs, z * rhs}; }
 mat3 mat3::operator/(double rhs) const { return {x / rhs, y / rhs, z / rhs}; }
+
+mat3& mat3::operator = (const mat3& rhs) {x=rhs[0]; y=rhs[1]; z=rhs[2]; return *this;}
+
+mat3 mat3::cominor() const
+{
+    return {{this->y.y * this->z.z - this->y.z * this->z.y,
+                    this->y.x * this->z.z - this->y.z * this->z.x,
+                    this->y.x * this->z.y - this->y.y * this->z.x},
+                    {this->x.y * this->z.z - this->x.z * this->z.y,
+                    this->x.x * this->z.z - this->x.z * this->z.x,
+                    this->x.x * this->z.y - this->x.y * this->z.x},
+                    {this->x.y * this->y.z - this->x.z * this->y.y,
+                    this->x.x * this->y.z - this->x.z * this->y.x,
+                    this->x.x * this->y.y - this->x.y * this->y.x}};
+}
+
+mat3 mat3::crossneg() const
+{
+    return {{this->x.x, -this->x.y, this->x.z},
+        {-this->y.x, this->y.y, -this->y.z},
+        {this->z.x, -this->z.y, this->z.z}};
+}
+
+mat3 mat3::alcominor() const
+{
+    return cominor().crossneg();
+}
+
+mat3 mat3::adjugate() const
+{
+    return alcominor().transpose();
+}
+
+double mat3::det() const
+{
+    return this->x.x * this->y.y * this->z.z +
+            this->x.y * this->y.z * this->z.x +
+            this->x.z * this->y.x * this->z.y -
+            this->x.x * this->y.z * this->z.y -
+            this->x.y * this->y.x * this->z.z -
+            this->x.z * this->y.y * this->z.x;
+}
+
+mat3 mat3::inverse() const
+{
+    return adjugate() / (det() + 1e-12);
+}
+
+mat3 mat3::transpose() const
+{
+    return {{this->x.x, this->y.x, this->z.x},
+        {this->x.y, this->y.y, this->z.y},
+        {this->x.z, this->y.z, this->z.z}};
+}

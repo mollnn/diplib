@@ -1,13 +1,13 @@
-#include "imgplot.h"
+#include "qimageplot.h"
 #include <QDebug>
 #include <QLabel>
 
-ImgPlot::ImgPlot(QWidget *parent) : QWidget(parent)
+QImagePlot::QImagePlot(QWidget *parent) : QWidget(parent)
 {
     label_ = new QLabel(this);
 }
 
-void ImgPlot::imshow(const QImage &img)
+void QImagePlot::imshow(const QImage &img)
 {
     label_->setFixedSize(img.size());
     label_->resize(img.size());

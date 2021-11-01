@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <QLabel>
 
-class ImgPlotBox : public QWidget
+class QImagePlotBox : public QWidget
 {
     Q_OBJECT
 private:
@@ -13,14 +13,16 @@ private:
     QPoint drag_last_pos_;
     bool is_mouse_pressed_;
 public:
-    explicit ImgPlotBox(QWidget *parent = nullptr);
+    explicit QImagePlotBox(QWidget *parent = nullptr);
     void imshow(const QImage &img);
     void resizeEvent(QResizeEvent * event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
 signals:
     void dragSignal(int dx, int dy);
+    void scrollSignal(double val);
 };
 
 #endif // IMGPLOT_H

@@ -5,14 +5,14 @@
 #include <QWidget>
 #include <QLabel>
 
-class ImgPlot : public QWidget
+class QImagePlot : public QWidget
 {
     Q_OBJECT
 private:
     QLabel *label_;
 
 public:
-    explicit ImgPlot(QWidget *parent = nullptr);
+    explicit QImagePlot(QWidget *parent = nullptr);
     void imshow(const QImage &img);
 signals:
 };

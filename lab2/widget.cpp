@@ -1,22 +1,36 @@
 #include "widget.h"
 #include "img.h"
-#include "imgplotbox.h"
+#include "qimageplotbox.h"
+#include <QKeyEvent>
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
 {
 
-    img_plot_box_ = new ImgPlotBox(this);
+    img_plot_box_ = new QImagePlotBox(this);
 
-    connect(img_plot_box_, &ImgPlotBox::dragSignal, [&](int dx, int dy)
+    connect(img_plot_box_, &QImagePlotBox::dragSignal, [&](int dx, int dy)
     {
         this->view_offset_x_ -= dx;
         this->view_offset_y_ -= dy;
         this->_render();
     });
 
+    connect(img_plot_box_, &QImagePlotBox::scrollSignal, [&](double delta)
+    {
+        if(is_ctrl_pressed_)
+            this->view_rotation_ += 0.0005*delta;
+        else this->view_scale_ *= 1 + 0.0005*delta;
+        this->_render();
+    });
+
+    is_ctrl_pressed_=false;
+
     label_gray_window_breadth_ = new QLabel(this);
     label_gray_window_position_ = new QLabel(this);
+    label_tip_ = new QLabel(this);
+
+    label_tip_->setText("鼠标拖动图像以旋转，滚动滚轮以缩放，按下Ctrl滚动滚轮以旋转");
 
     slider_gray_window_breadth_ = new QSlider(Qt::Horizontal, this);
     slider_gray_window_position_ = new QSlider(Qt::Horizontal, this);
@@ -90,9 +104,9 @@ void Widget::_render()
     int src_width = img_in_.width();
     int src_height = img_in_.height();
 
-    Img<uint16_t> img_tmp = img_in_.cropFast((-view_width+src_width)/2+view_offset_x_,
-                                             (-view_height+src_height)/2+view_offset_y_,
-                                             view_width, view_height);
+    Img<uint16_t> img_tmp = img_in_.crop((-view_width+src_width)/2+view_offset_x_,
+                                         (-view_height+src_height)/2+view_offset_y_,
+                                         view_width, view_height, view_rotation_, view_scale_);
 
     img_out_=img_tmp.applyGrayWindow<uint8_t>(gray_window_breadth_, gray_window_position_);
     img_plot_box_->imshow(img_out_.toQImage());
@@ -106,6 +120,8 @@ void Widget::_loadImage()
         img_in_.fromRaw(filename_in_);
         view_offset_x_=0;
         view_offset_y_=0;
+        view_scale_=1;
+        view_rotation_=0;
 
         slider_gray_window_breadth_->setRange(0,4096);
         spinbox_gray_window_breadth_->setRange(0,4096);
@@ -154,6 +170,7 @@ void Widget::_reLayout()
     grid_layout_->addWidget(button_open_, 3, 2, 1, 1);
 
     grid_layout_->addWidget(button_save_, 3, 4, 1, 1);
+    grid_layout_->addWidget(label_tip_, 4, 0, 1, 7);
     setLayout(grid_layout_);
 }
 
@@ -161,4 +178,21 @@ void Widget::resizeEvent(QResizeEvent * event)
 {
     this->_reLayout();
     this->_render();
+}
+
+
+void Widget::keyPressEvent(QKeyEvent *event)
+{
+    if(event->key()==Qt::Key_Control)
+    {
+        is_ctrl_pressed_=true;
+    }
+}
+
+void Widget::keyReleaseEvent(QKeyEvent *event)
+{
+    if(event->key()==Qt::Key_Control)
+    {
+        is_ctrl_pressed_=false;
+    }
 }

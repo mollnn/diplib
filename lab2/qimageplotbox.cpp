@@ -1,9 +1,9 @@
-#include "imgplotbox.h"
+#include "qimageplotbox.h"
 #include <QDebug>
 #include <QLabel>
 #include <QMouseEvent>
 
-ImgPlotBox::ImgPlotBox(QWidget *parent) : QWidget(parent)
+QImagePlotBox::QImagePlotBox(QWidget *parent) : QWidget(parent)
 {
 
     label_ = new QLabel(this);
@@ -21,23 +21,25 @@ ImgPlotBox::ImgPlotBox(QWidget *parent) : QWidget(parent)
     this->is_mouse_pressed_=false;
 }
 
-void ImgPlotBox::imshow(const QImage &img)
+void QImagePlotBox::imshow(const QImage &img)
 {
     label_->setPixmap(QPixmap::fromImage(img.copy()));
 }
 
-void ImgPlotBox::resizeEvent(QResizeEvent * event)
+void QImagePlotBox::resizeEvent(QResizeEvent * event)
 {
     label_->setFixedSize(this->size());
+    event->accept();
 }
 
-void ImgPlotBox::mousePressEvent(QMouseEvent *event)
+void QImagePlotBox::mousePressEvent(QMouseEvent *event)
 {
     this->drag_last_pos_=event->pos();
     this->is_mouse_pressed_=true;
+    event->accept();
 }
 
-void ImgPlotBox::mouseMoveEvent(QMouseEvent *event)
+void QImagePlotBox::mouseMoveEvent(QMouseEvent *event)
 {
     if(this->is_mouse_pressed_)
     {
@@ -45,9 +47,10 @@ void ImgPlotBox::mouseMoveEvent(QMouseEvent *event)
         emit dragSignal(current_pos.x()-drag_last_pos_.x(), current_pos.y()-drag_last_pos_.y());
         this->drag_last_pos_=current_pos;
     }
+    event->accept();
 }
 
-void ImgPlotBox::mouseReleaseEvent(QMouseEvent *event)
+void QImagePlotBox::mouseReleaseEvent(QMouseEvent *event)
 {
     if(this->is_mouse_pressed_)
     {
@@ -56,4 +59,12 @@ void ImgPlotBox::mouseReleaseEvent(QMouseEvent *event)
         this->drag_last_pos_=current_pos;
         this->is_mouse_pressed_=false;
     }
+    event->accept();
+}
+
+void QImagePlotBox::wheelEvent(QWheelEvent *event)
+{
+    double delta = event->delta();
+    emit scrollSignal(delta);
+    event->accept();
 }

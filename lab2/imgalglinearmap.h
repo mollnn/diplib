@@ -48,6 +48,7 @@ protected:
     {
         R type_max = (1ull << (8 * sizeof(R))) - 1;
         ImgData<R> result(this->width_, this->height_, type_max);
+
         for(int i=0;i<this->height_;i++)
         {
             for(int j=0;j<this->width_;j++)

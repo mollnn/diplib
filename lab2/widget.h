@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <cstdint>
 #include "img.h"
-#include "imgplotbox.h"
+#include "qimageplotbox.h"
 #include <QGridLayout>
 #include <QDebug>
 #include <QLabel>
@@ -35,7 +35,9 @@ class Widget : public QWidget
 public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
-
+protected:
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
 private:
     QString filename_in_;
     QString filename_out_;
@@ -43,13 +45,19 @@ private:
     Img<uint8_t> img_out_;
     int view_offset_x_;
     int view_offset_y_;
+    double view_scale_;
+    double view_rotation_;
     int gray_window_breadth_;
     int gray_window_position_;
+    bool is_ctrl_pressed_;
 
-    ImgPlotBox *img_plot_box_;
+
+
+    QImagePlotBox *img_plot_box_;
 
     QLabel *label_gray_window_breadth_;
     QLabel *label_gray_window_position_;
+    QLabel *label_tip_;
 
     QSlider *slider_gray_window_breadth_;
     QSlider *slider_gray_window_position_;
@@ -59,7 +67,6 @@ private:
 
     QPushButton *button_open_;
     QPushButton *button_save_;
-
 
 
     QGridLayout *grid_layout_;

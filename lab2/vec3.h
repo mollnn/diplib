@@ -7,6 +7,8 @@
 struct vec3
 {
     double x, y, z;
+    vec3();
+    vec3(double a,double b,double c);
     double &operator[](int id);
     double operator[](int id) const;
     vec3 operator+(const vec3 &rhs) const;
@@ -14,6 +16,7 @@ struct vec3
     vec3 operator*(const vec3 &rhs) const;
     vec3 operator*(double rhs) const;
     vec3 operator/(double rhs) const;
+    vec3& operator = (const vec3 &rhs);
     double dot(const vec3 &rhs) const;
     vec3 cross(const vec3 &rhs) const;
     double norm2() const;
