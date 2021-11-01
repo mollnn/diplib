@@ -1,6 +1,6 @@
 #include "widget.h"
-#include "img.h"
-#include "qimageplotbox.h"
+#include "Img.h"
+#include "QImagePlotBox.h"
 #include <QKeyEvent>
 
 Widget::Widget(QWidget *parent)

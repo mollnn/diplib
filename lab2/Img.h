@@ -12,9 +12,9 @@
 /// 命名规则示例：Class.funcPublic(), Class._funcPrivate(), Class.member_variable, funcGlobal(), local_variable
 /////////////////////////////////
 
-#include "imgconvert.h"
-#include "imgtransform.h"
-#include "imggraywindow.h"
+#include "ImgConvert.h"
+#include "ImgTransform.h"
+#include "ImgGrayWindow.h"
 
 template <typename T>
 class Img : public virtual ImgConvert<T>, public virtual ImgTransform<T>, public virtual ImgGrayWindow<T>

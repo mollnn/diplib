@@ -1,7 +1,7 @@
 #ifndef IMGALGINTERPOLATE_H
 #define IMGALGINTERPOLATE_H
 
-#include "imgdata.h"
+#include "ImgData.h"
 #include <cmath>
 
 template <typename T>

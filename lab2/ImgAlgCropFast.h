@@ -1,7 +1,7 @@
 #ifndef IMGALGCROPFAST_H
 #define IMGALGCROPFAST_H
 
-#include "imgdata.h"
+#include "ImgData.h"
 #include <cmath>
 #include <QDebug>
 

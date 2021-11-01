@@ -1,4 +1,4 @@
-#include "qimageplot.h"
+#include "QImagePlot.h"
 #include <QDebug>
 #include <QLabel>
 

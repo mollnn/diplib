@@ -1,4 +1,4 @@
-#include "qimageplotbox.h"
+#include "QImagePlotBox.h"
 #include <QDebug>
 #include <QLabel>
 #include <QMouseEvent>

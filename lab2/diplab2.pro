@@ -17,27 +17,27 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     AffineTransform.cpp \
+    QImagePlot.cpp \
+    QImagePlotBox.cpp \
     main.cpp \
     mat3.cpp \
-    qimageplot.cpp \
-    qimageplotbox.cpp \
     vec3.cpp \
     widget.cpp
 
 HEADERS += \
     AffineTransform.h \
-    img.h \
-    imgalgcropfast.h \
-    imgalginterpolate.h \
-    imgalglinearmap.h \
-    imgconvert.h \
-    imgdata.h \
-    imggraywindow.h \
-    imgtransform.h \
+    Img.h \
+    ImgAlgCropFast.h \
+    ImgAlgInterpolate.h \
+    ImgAlgLinearMap.h \
+    ImgConvert.h \
+    ImgData.h \
+    ImgGrayWindow.h \
+    ImgTransform.h \
+    QImagePlot.h \
+    QImagePlotBox.h \
     mat3.h \
     mathheader.h \
-    qimageplot.h \
-    qimageplotbox.h \
     vec3.h \
     widget.h
 

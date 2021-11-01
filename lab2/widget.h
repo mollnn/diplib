@@ -3,8 +3,8 @@
 
 #include <QWidget>
 #include <cstdint>
-#include "img.h"
-#include "qimageplotbox.h"
+#include "Img.h"
+#include "QImagePlotBox.h"
 #include <QGridLayout>
 #include <QDebug>
 #include <QLabel>

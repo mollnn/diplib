@@ -1,7 +1,7 @@
 #ifndef IMGALGLINEARMAPPER_H
 #define IMGALGLINEARMAPPER_H
 
-#include "imgdata.h"
+#include "ImgData.h"
 
 template <typename T>
 class ImgAlgLinearMap: public virtual ImgData<T>

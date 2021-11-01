@@ -1,8 +1,8 @@
 #ifndef IMGCONVERT_H
 #define IMGCONVERT_H
 
-#include "imgdata.h"
-#include "imgalglinearmap.h"
+#include "ImgData.h"
+#include "ImgAlgLinearMap.h"
 #include <QImage>
 #include <QFile>
 #include <QDataStream>

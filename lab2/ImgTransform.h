@@ -1,8 +1,8 @@
 #ifndef IMGAFFINE_H
 #define IMGAFFINE_H
 
-#include "imgalginterpolate.h"
-#include "imgalgcropfast.h"
+#include "ImgAlgInterpolate.h"
+#include "ImgAlgCropFast.h"
 #include "mathheader.h"
 #include "AffineTransform.h"
 #include <cmath>

@@ -1,8 +1,8 @@
 #ifndef IMGGRAYWINDOW_H
 #define IMGGRAYWINDOW_H
 
-#include "imgdata.h"
-#include "imgalglinearmap.h"
+#include "ImgData.h"
+#include "ImgAlgLinearMap.h"
 #include <cmath>
 
 template <typename T>
