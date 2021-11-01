@@ -31,6 +31,7 @@ SOURCES += \
 HEADERS += \
     AffineTransform.h \
     Img.h \
+    ImgAlgAffine.h \
     ImgAlgCropFast.h \
     ImgAlgInterpolate.h \
     ImgAlgLinearMap.h \

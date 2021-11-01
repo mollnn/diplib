@@ -9,7 +9,7 @@
 /// Img...          处理算法（不负责数据管理）
 /// Img             虚继承以上各类，提供给用户
 /// ImgPlot         QImage 显示辅助类（与以上各类无继承关系）
-/// 命名规则示例：Class.funcPublic(), Class._funcPrivate(), Class.member_variable, funcGlobal(), local_variable
+/// 命名规则示例：Class.funcPublic(), Class._funcPrivate_Note(), Class.member_variable, funcGlobal(), local_variable
 /////////////////////////////////
 
 #include "ImgConvert.h"
@@ -26,26 +26,42 @@ public:
     Img(const ImgData<T> &img) : ImgData<T>(img) {}
     Img(ImgData<T> &&img) : ImgData<T>(img) {}
     Img(int width, int height, T range): ImgData<T>(width,height,range) {}
-    Img &operator=(const Img &img)
-    {
-        ImgData<T>::operator=(img);
-        return *this;
-    }
-    Img &operator=(Img &&img)
-    {
-        ImgData<T>::operator=(std::move(img));
-        return *this;
-    }
-    Img &operator=(const ImgData<T> &img)
-    {
-        ImgData<T>::operator=(img);
-        return *this;
-    }
-    Img &operator=(ImgData<T> &&img)
-    {
-        ImgData<T>::operator=(std::move(img));
-        return *this;
-    }
+    Img &operator=(const Img &img);
+    Img &operator=(Img &&img);
+    Img &operator=(const ImgData<T> &img);
+    Img &operator=(ImgData<T> &&img);
 };
+
+
+
+//////////////////////////////////////////////
+
+template <typename T>
+Img<T>& Img<T>::operator=(const Img<T> &img)
+{
+    ImgData<T>::operator=(img);
+    return *this;
+}
+
+template <typename T>
+Img<T>& Img<T>::operator=(Img<T> &&img)
+{
+    ImgData<T>::operator=(std::move(img));
+    return *this;
+}
+
+template <typename T>
+Img<T>& Img<T>::operator=(const ImgData<T> &img)
+{
+    ImgData<T>::operator=(img);
+    return *this;
+}
+
+template <typename T>
+Img<T>& Img<T>::operator=(ImgData<T> &&img)
+{
+    ImgData<T>::operator=(std::move(img));
+    return *this;
+}
 
 #endif // IMG_H
