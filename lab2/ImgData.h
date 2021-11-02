@@ -15,7 +15,7 @@ protected:
     T *data_;
     void _allocate();
     void _free();
-    T _getPixelWithDefault(int x, int y, T default_value = 0);
+    T _pixel(int x, int y, T default_value = 0);
 
 public:
     ImgData();
@@ -143,7 +143,7 @@ T ImgData<T>::pixel(int x, int y) const
 }
 
 template <typename T>
-T ImgData<T>::_getPixelWithDefault(int x, int y, T default_value)
+T ImgData<T>::_pixel(int x, int y, T default_value)
 {
     if (x >= 0 && x < this->width_ && y >= 0 && y < this->height_)
         return this->pixel(x, y);

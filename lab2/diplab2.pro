@@ -19,17 +19,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    AffineTransform.cpp \
     QImagePlot.cpp \
     QImagePlotBox.cpp \
     Tester.cpp \
+    TransformMatrix.cpp \
     main.cpp \
     mat3.cpp \
     vec3.cpp \
     widget.cpp
 
 HEADERS += \
-    AffineTransform.h \
     Img.h \
     ImgAlgAffine.h \
     ImgAlgCropFast.h \
@@ -37,11 +36,12 @@ HEADERS += \
     ImgAlgLinearMap.h \
     ImgConvert.h \
     ImgData.h \
-    ImgGrayWindow.h \
-    ImgTransform.h \
+    ImgFuncGrayWindow.h \
+    ImgFuncTransform.h \
     QImagePlot.h \
     QImagePlotBox.h \
     Tester.h \
+    TransformMatrix.h \
     mat3.h \
     mathheader.h \
     vec3.h \

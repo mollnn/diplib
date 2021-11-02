@@ -30,7 +30,7 @@ Widget::Widget(QWidget *parent)
     label_gray_window_position_ = new QLabel(this);
     label_tip_ = new QLabel(this);
 
-    label_tip_->setText("鼠标拖动图像以旋转，滚动滚轮以缩放，按下Ctrl滚动滚轮以旋转");
+    label_tip_->setText("鼠标拖拽图像以平移，滚动鼠标滚轮以缩放，按住Ctrl滚动滚轮以旋转");
 
     slider_gray_window_breadth_ = new QSlider(Qt::Horizontal, this);
     slider_gray_window_position_ = new QSlider(Qt::Horizontal, this);

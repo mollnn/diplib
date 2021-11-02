@@ -2,17 +2,16 @@
 
 #include <QApplication>
 
-#include <immintrin.h>
-#include <avx2intrin.h>
 
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    Widget w;
-    w.show();
-    return a.exec();
-}
 
-//#include "Tester.h"
+//int main(int argc, char *argv[])
+//{
+//    QApplication a(argc, argv);
+//    Widget w;
+//    w.showMaximized();
+//    return a.exec();
+//}
 
-//QTEST_APPLESS_MAIN(Test1)
+#include "Tester.h"
+
+QTEST_APPLESS_MAIN(Test1)

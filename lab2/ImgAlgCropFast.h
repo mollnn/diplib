@@ -55,6 +55,7 @@ ImgData<T> ImgAlgCropFast<T>::_cropFast(int x0, int y0, int target_width, int ta
         return result;
     }
 
+#pragma omp parallel for
     for(int i=0;i<target_height;i++)
     {
         int y1=i+y0;

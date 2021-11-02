@@ -98,7 +98,9 @@ void ImgConvert<T>::fromRaw(const QString& filename)
     QFile file(filename);
     file.open(QIODevice::ReadOnly);
     QDataStream in(&file);
+
     this->range_=4095;
+
     quint32 width;
     quint32 height;
     in.readRawData(reinterpret_cast<char*>(&width),4);

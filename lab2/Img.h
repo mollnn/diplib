@@ -1,23 +1,38 @@
 #ifndef IMG_H
 #define IMG_H
 
-/////////////////////////////////
+///////////////////////////////////////////////
 /// 类结构
 /// 模板参数 T 支持 uint8_t, uint16_t
-/// ImgData         公共基类，数据结构（唯一拥有数据成员的类）
-/// ImgConvert      与 QImage 互转（唯一的平台相关类）
-/// Img...          处理算法（不负责数据管理）
-/// Img             虚继承以上各类，提供给用户
-/// ImgPlot         QImage 显示辅助类（与以上各类无继承关系）
-/// 命名规则示例：Class.funcPublic(), Class._funcPrivate_Note(), Class.member_variable, funcGlobal(), local_variable
-/////////////////////////////////
+///////////////////////////////////////////////
+///////// 【数据结构层】 拥有数据成员，提供基本方法
+/// ImgData                 公共基类，数据结构
+/// vec3, mat3, ...         内部辅助结构体，对外需再封装
+///////////////////////////////////////////////
+///////// 【核心算法层】 核心算法实现，允许层内相互调用
+/// ImgAlg...               核心算法实现（包含简单并行化）
+/// ImgAlg...Simd/Cuda      较复杂的并行优化
+///////////////////////////////////////////////
+///////// 【功能逻辑层】 实现业务需求。禁止层内相互调用
+/// ImgFunc...              功能逻辑模块
+/// ImgConvert              与 QImage 互转
+///////////////////////////////////////////////
+///////// 【交互封装层】 仅封装
+/// Img                     “集大成者”
+/// AffineTransform, ...    接口参数包装结构，提供少量运算方法
+/// QImagePlot              QImage 显示辅助类
+/// QImagePlotBox           QImage 高级显示辅助类
+///////////////////////////////////////////////
+/// 命名规则示例：Class.funcPublic(), Class._funcPrivate_Method()
+///         Class.member_variable, funcGlobal(), local_variable
+///////////////////////////////////////////////
 
 #include "ImgConvert.h"
-#include "ImgTransform.h"
-#include "ImgGrayWindow.h"
+#include "ImgFuncTransform.h"
+#include "ImgFuncGrayWindow.h"
 
 template <typename T>
-class Img : public virtual ImgConvert<T>, public virtual ImgTransform<T>, public virtual ImgGrayWindow<T>
+class Img : public virtual ImgConvert<T>, public virtual ImgFuncTransform<T>, public virtual ImgFuncGrayWindow<T>
 {
 public:
     Img() {}
@@ -31,8 +46,6 @@ public:
     Img &operator=(const ImgData<T> &img);
     Img &operator=(ImgData<T> &&img);
 };
-
-
 
 //////////////////////////////////////////////
 

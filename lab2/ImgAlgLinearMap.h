@@ -3,6 +3,10 @@
 
 #include "ImgData.h"
 
+
+#include <immintrin.h>
+#include <avx2intrin.h>
+
 template <typename T>
 class ImgAlgLinearMap: public virtual ImgData<T>
 {
@@ -20,13 +24,13 @@ protected:
     ImgData<R> _linearMapSimple(R target_range, T source_range);
 
     template <typename R=T>
-    ImgData<R> _linearMapRange_(R target_min, R target_max, T source_min, T source_max);
+    ImgData<R> _linearMapRange(R target_min, R target_max, T source_min, T source_max);
+
+    template <typename R=T>
+    ImgData<R> _linearMapRange_Baseline(R target_min, R target_max, T source_min, T source_max);
 
     template <typename R=T>
     ImgData<R> _linearMapRange_LUT(R target_min, R target_max, T source_min, T source_max);
-
-    template <typename R=T>
-    ImgData<R> _linearMapRange(R target_min, R target_max, T source_min, T source_max);
 };
 
 
@@ -72,17 +76,19 @@ ImgData<R> ImgAlgLinearMap<T>::_linearMapSimple(R target_range, T source_range)
 
 template <typename T>
 template <typename R>
-ImgData<R> ImgAlgLinearMap<T>::_linearMapRange_(R target_min, R target_max, T source_min, T source_max)
+ImgData<R> ImgAlgLinearMap<T>::_linearMapRange_Baseline(R target_min, R target_max, T source_min, T source_max)
 {
     R type_max = (1ull << (8 * sizeof(R))) - 1;
     ImgData<R> result(this->width_, this->height_, type_max);
+
+    auto target_data_ptr = result.bits();
 
 #pragma omp parallel for
     for(int i=0;i<this->height_;i++)
     {
         for(int j=0;j<this->width_;j++)
         {
-            result.setPixel(j,i,this->_pixelLinearMapRange(this->pixel(j,i),target_min,target_max,source_min,source_max));
+            target_data_ptr[i*this->width_+j]=this->_pixelLinearMapRange(this->data_[i*this->width_+j],target_min,target_max,source_min,source_max);
         }
     }
     return result;
@@ -103,12 +109,14 @@ ImgData<R> ImgAlgLinearMap<T>::_linearMapRange_LUT(R target_min, R target_max, T
         lut[i]=this->_pixelLinearMapRange<R>(i, target_min, target_max, source_min, source_max);
     }
 
+    auto target_data_ptr = result.bits();
+
 #pragma omp parallel for
     for(int i=0;i<this->height_;i++)
     {
         for(int j=0;j<this->width_;j++)
         {
-            result.setPixel(j,i,lut[this->pixel(j,i)]);
+            target_data_ptr[i*this->width_+j]=lut[this->data_[i*this->width_+j]];
         }
     }
 
