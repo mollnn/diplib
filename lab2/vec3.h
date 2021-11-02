@@ -6,24 +6,24 @@
 // Vector 3D
 struct vec3
 {
-    double x, y, z;
+    float x, y, z;
     vec3();
-    vec3(double a,double b,double c);
-    double &operator[](int id);
-    double operator[](int id) const;
+    vec3(float a,float b,float c);
+    float &operator[](int id);
+    float operator[](int id) const;
     vec3 operator+(const vec3 &rhs) const;
     vec3 operator-(const vec3 &rhs) const;
     vec3 operator*(const vec3 &rhs) const;
-    vec3 operator*(double rhs) const;
-    vec3 operator/(double rhs) const;
+    vec3 operator*(float rhs) const;
+    vec3 operator/(float rhs) const;
     vec3& operator = (const vec3 &rhs);
-    double dot(const vec3 &rhs) const;
+    float dot(const vec3 &rhs) const;
     vec3 cross(const vec3 &rhs) const;
-    double norm2() const;
-    double norm() const;
+    float norm2() const;
+    float norm() const;
     vec3 unit() const;
-    double avg() const;
+    float avg() const;
 };
-vec3 operator*(double lhs, const vec3 &rhs);
+vec3 operator*(float lhs, const vec3 &rhs);
 
 #endif // VEC3_H

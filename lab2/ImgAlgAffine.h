@@ -1,14 +1,14 @@
 #ifndef IMGALGAFFINE_H
 #define IMGALGAFFINE_H
 
-#include "ImgAlgInterpolate.h"
-#include "ImgAlgCropFast.h"
+#include "ImgAlgInterp.h"
+#include "ImgAlgCopy.h"
 #include "mathheader.h"
 #include <cmath>
 
 
 template <typename T>
-class ImgAlgAffine : public virtual ImgAlgInterpolate<T>
+class ImgAlgAffine : public virtual ImgAlgInterp<T>
 {
 public:
     ImgAlgAffine() {}
@@ -35,7 +35,7 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Baseline(const mat3 &transform_matr
         {
             vec3 target_pos = {1.0 * j, 1.0 * i, 1.0};
             vec3 source_pos = transform_matrix_inverse * target_pos;
-            result.setPixel(j, i, this->_interpolateBilinear(source_pos.x, source_pos.y));
+            result.setPixel(j, i, this->_pxInterpBilinear(source_pos.x, source_pos.y));
         }
     }
     return result;
@@ -63,7 +63,7 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Fast(const mat3 &transform_matrix, 
         {
             float src_x = t11 * j + t12 * i + t13;
             float src_y = t21 * j + t22 * i + t23;
-            result.setPixel(j, i, this->_interpolateBilinear(src_x, src_y));
+            result.setPixel(j, i, this->_pxInterpBilinear(src_x, src_y));
         }
     }
     return result;

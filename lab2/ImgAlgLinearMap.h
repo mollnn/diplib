@@ -15,10 +15,10 @@ public:
 
 protected:
     template <typename R=T>
-    static R _pixelLinearMapSimple(T pixel, R target_range, T source_range);
+    static R _pxLinearMapSimple(T pixel, R target_range, T source_range);
 
     template <typename R=T>
-    static R _pixelLinearMapRange(T pixel, R target_min, R target_max, T source_min, T source_max);
+    static R _pxLinearMapRange(T pixel, R target_min, R target_max, T source_min, T source_max);
 
     template <typename R=T>
     ImgData<R> _linearMapSimple(R target_range, T source_range);
@@ -38,7 +38,7 @@ protected:
 
 template <typename T>
 template <typename R>
-R ImgAlgLinearMap<T>::_pixelLinearMapSimple(T pixel, R target_range, T source_range)
+R ImgAlgLinearMap<T>::_pxLinearMapSimple(T pixel, R target_range, T source_range)
 {
     // For example, 65535 -> 255:
     //  0->0, 255->0, 256->1, 511->1, ..., 65535->255
@@ -47,7 +47,7 @@ R ImgAlgLinearMap<T>::_pixelLinearMapSimple(T pixel, R target_range, T source_ra
 
 template <typename T>
 template <typename R>
-R ImgAlgLinearMap<T>::_pixelLinearMapRange(T pixel, R target_min, R target_max, T source_min, T source_max)
+R ImgAlgLinearMap<T>::_pxLinearMapRange(T pixel, R target_min, R target_max, T source_min, T source_max)
 {
     int delta = 1 * pixel - source_min;
     if(delta>source_max - source_min) delta=source_max-source_min;
@@ -106,7 +106,7 @@ ImgData<R> ImgAlgLinearMap<T>::_linearMapRange_LUT(R target_min, R target_max, T
 #pragma omp parallel for
     for(int i=0; i<=this->range_; i++)
     {
-        lut[i]=this->_pixelLinearMapRange<R>(i, target_min, target_max, source_min, source_max);
+        lut[i]=this->_pxLinearMapRange<R>(i, target_min, target_max, source_min, source_max);
     }
 
     auto target_data_ptr = result.bits();

@@ -6,10 +6,10 @@
 #include <QDebug>
 
 template <typename T>
-class ImgAlgCropFast: public virtual ImgData<T>
+class ImgAlgCopy: public virtual ImgData<T>
 {
 public:
-    ImgAlgCropFast(){}
+    ImgAlgCopy(){}
 protected:
     ImgData<T> _cropFast(int x0, int y0, int target_width, int target_height);
 };
@@ -18,7 +18,7 @@ protected:
 //////////////////////////////////////////////
 
 template <typename T>
-ImgData<T> ImgAlgCropFast<T>::_cropFast(int x0, int y0, int target_width, int target_height)
+ImgData<T> ImgAlgCopy<T>::_cropFast(int x0, int y0, int target_width, int target_height)
 {
     ImgData<T> result(target_width, target_height, this->range_);
     memset(result.bits(), 0, target_width*target_height*sizeof(T));

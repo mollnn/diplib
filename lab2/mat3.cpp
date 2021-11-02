@@ -2,7 +2,7 @@
 
 mat3::mat3() {}
 mat3::mat3(vec3 a, vec3 b,vec3 c): x(a),y(b),z(c) {}
-mat3::mat3(double ax, double ay, double az, double bx, double by, double bz,double cx,double cy,double cz):
+mat3::mat3(float ax, float ay, float az, float bx, float by, float bz,float cx,float cy,float cz):
     x(ax,ay,az), y(bx,by,bz), z(cx,cy,cz) {}
 
 vec3 &mat3::operator[](int id) { return id == 0 ? x : id == 1 ? y
@@ -24,8 +24,8 @@ vec3 mat3::operator*(const vec3 &rhs) const
 {
     return {this->row(0).dot(rhs), this->row(1).dot(rhs), this->row(2).dot(rhs)};
 }
-mat3 mat3::operator*(double rhs) const { return {x * rhs, y * rhs, z * rhs}; }
-mat3 mat3::operator/(double rhs) const { return {x / rhs, y / rhs, z / rhs}; }
+mat3 mat3::operator*(float rhs) const { return {x * rhs, y * rhs, z * rhs}; }
+mat3 mat3::operator/(float rhs) const { return {x / rhs, y / rhs, z / rhs}; }
 
 mat3& mat3::operator = (const mat3& rhs) {x=rhs[0]; y=rhs[1]; z=rhs[2]; return *this;}
 
@@ -59,7 +59,7 @@ mat3 mat3::adjugate() const
     return alcominor().transpose();
 }
 
-double mat3::det() const
+float mat3::det() const
 {
     return this->x.x * this->y.y * this->z.z +
             this->x.y * this->y.z * this->z.x +
