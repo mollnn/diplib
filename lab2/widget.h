@@ -66,8 +66,6 @@ private:
     QSpinBox *spinbox_gray_window_position_;
 
     QPushButton *button_open_;
-    QPushButton *button_save_;
-
 
     QGridLayout *grid_layout_;
 

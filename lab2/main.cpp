@@ -4,14 +4,14 @@
 
 
 
-//int main(int argc, char *argv[])
-//{
-//    QApplication a(argc, argv);
-//    Widget w;
-//    w.showMaximized();
-//    return a.exec();
-//}
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    Widget w;
+    w.showMaximized();
+    return a.exec();
+}
 
-#include "Tester.h"
+//#include "Tester.h"
 
-QTEST_APPLESS_MAIN(Test1)
+//QTEST_APPLESS_MAIN(Test1)

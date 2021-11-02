@@ -41,11 +41,6 @@ T ImgAlgInterpolate<T>::_interpolateBilinear_Fixedpoint(float x, float y)
     int a10 = this->_pixel(x1, y0);
     int a11 = this->_pixel(x1, y1);
 
-//    int a00 = x0;
-//    int a01 = x1;
-//    int a10 = y0;
-//    int a11 = y1;
-
     int xf = x * 256;
     int yf = y * 256;
 

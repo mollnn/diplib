@@ -49,19 +49,11 @@ Widget::Widget(QWidget *parent)
     button_open_ = new QPushButton(this);
     button_open_->setText("打开文件");
 
-    button_save_ = new QPushButton(this);
-    button_save_->setText("保存文件");
 
     connect(button_open_, &QPushButton::clicked, [&]()
     {
         filename_in_ = QFileDialog::getOpenFileName(this, tr("Open Image"), "/home/jana", tr("Raw Image Files (*.raw)"));
         this->_loadImage();
-    });
-
-    connect(button_save_, &QPushButton::clicked, [&]()
-    {
-        filename_out_ = QFileDialog::getSaveFileName(this, tr("Save Image"), "/home/jana", tr("Image Files (*.bmp *.jpg *.gif *.tif *.png)"));
-        this->_saveImage();
     });
 
     _bindValueEvents(&gray_window_breadth_, slider_gray_window_breadth_, spinbox_gray_window_breadth_);
@@ -167,9 +159,7 @@ void Widget::_reLayout()
     grid_layout_->addWidget(label_gray_window_position_, 2, 0, 1, 1);
     grid_layout_->addWidget(slider_gray_window_position_, 2, 1, 1, 5);
     grid_layout_->addWidget(spinbox_gray_window_position_, 2, 6, 1, 1);
-    grid_layout_->addWidget(button_open_, 3, 2, 1, 1);
-
-    grid_layout_->addWidget(button_save_, 3, 4, 1, 1);
+    grid_layout_->addWidget(button_open_, 3, 3, 1, 1);
     grid_layout_->addWidget(label_tip_, 4, 0, 1, 7);
     setLayout(grid_layout_);
 }
