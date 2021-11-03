@@ -96,11 +96,11 @@ void Widget::_render()
     int src_width = img_in_.width();
     int src_height = img_in_.height();
 
-    Img<uint16_t> img_tmp = img_in_.crop((-view_width+src_width)/2+view_offset_x_,
-                                         (-view_height+src_height)/2+view_offset_y_,
-                                         view_width, view_height, view_rotation_, view_scale_);
+    Img<uint8_t> img_tmp = img_in_.applyGrayWindow<uint8_t>(gray_window_breadth_, gray_window_position_);
 
-    img_out_=img_tmp.applyGrayWindow<uint8_t>(gray_window_breadth_, gray_window_position_);
+    img_out_=img_tmp.crop((-view_width+src_width)/2+view_offset_x_,
+                          (-view_height+src_height)/2+view_offset_y_,
+                          view_width, view_height, view_rotation_, view_scale_);
     img_plot_box_->imshow(img_out_.toQImage());
     this->_reLayout();
 }
