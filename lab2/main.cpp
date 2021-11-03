@@ -2,7 +2,9 @@
 
 #include <QApplication>
 
+#define _AUTOTEST_FLAG
 
+#ifndef _AUTOTEST_FLAG
 
 int main(int argc, char *argv[])
 {
@@ -12,6 +14,10 @@ int main(int argc, char *argv[])
     return a.exec();
 }
 
-//#include "Tester.h"
+#else
 
-//QTEST_APPLESS_MAIN(Test1)
+#include "Tester.h"
+
+QTEST_APPLESS_MAIN(Test1)
+
+#endif

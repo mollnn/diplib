@@ -61,14 +61,6 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Baseline(float* coords, int target_w
     return result;
 }
 
-//template <typename T>
-//__m256 ImgAlgInterp<T>::__8pxInterpBilinear_Avx2(const float* image, const int width, const __m256 xi, const __m256 yi)
-//{
-//    // 计算连续的 8 个像素
-
-//    return sum;
-//}
-
 template <typename T>
 ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width, int target_height)
 {
@@ -91,11 +83,15 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width
     // Cast image value to float
     float *source_image_ps = new float[source_img_size + 1];  // 末尾附加元素表示默认值
     float *target_image_ps = new float[target_img_size];
+
+
+#pragma omp parallel for
     for(int i=0;i<source_img_size;i++)
     {
         source_image_ps[i]=source_data_ptr[i];
     }
     source_image_ps[source_img_size] = 0; // 默认值可自定义
+
 
     __m256i coords_index_offsets_x = _mm256_set_epi32(14, 12, 10, 8, 6, 4, 2, 0);
     __m256i coords_index_offsets_y = _mm256_set_epi32(15, 13, 11, 9, 7, 5, 3, 1);
@@ -109,6 +105,7 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width
 
     int width = this->width_;
 
+#pragma omp parallel for
     for(int i=0;i<target_img_size_r8;i+=8)
     {
         __m256i coords_index_base = _mm256_set1_epi32(2*i);
@@ -197,6 +194,7 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width
         target_image_ps[i] = _pxInterpBilinear(x,y);
     }
 
+#pragma omp parallel for
     for(int i=0;i<target_img_size;i++)
     {
         target_data_ptr[i]=target_image_ps[i];

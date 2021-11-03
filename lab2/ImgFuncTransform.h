@@ -115,14 +115,14 @@ ImgData<T> ImgFuncTransform<T>::scale(float scale)
 template <typename T>
 ImgData<T> ImgFuncTransform<T>::crop(float x0, float y0, int target_width, int target_height, float rotation, float scale)
 {
-//    if(rotation==0 && scale==1)
-//    {
-//        return this->_cropFast(x0,y0,target_width,target_height);
-//    }
-//    else
-//    {
+    if(rotation==0 && scale==1)
+    {
+        return this->_copySubImg(x0,y0,target_width,target_height);
+    }
+    else
+    {
         return transformStd(-x0, -y0, rotation, scale, this->width_*0.5f, this->height_*0.5f, target_width, target_height);
-//    }
+    }
 }
 
 #endif // IMGAFFINE_H

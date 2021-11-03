@@ -30,7 +30,7 @@ Widget::Widget(QWidget *parent)
     label_gray_window_position_ = new QLabel(this);
     label_tip_ = new QLabel(this);
 
-    label_tip_->setText("鼠标拖拽图像以平移，滚动鼠标滚轮以缩放，按住Ctrl滚动滚轮以旋转");
+    label_tip_->setText("按住鼠标左键拖拽图像以平移，滚动鼠标滚轮以缩放，按住Ctrl滚动滚轮以旋转");
 
     slider_gray_window_breadth_ = new QSlider(Qt::Horizontal, this);
     slider_gray_window_position_ = new QSlider(Qt::Horizontal, this);
@@ -96,8 +96,9 @@ void Widget::_render()
     int src_width = img_in_.width();
     int src_height = img_in_.height();
 
+    // 为了测试处理流程的整体性能，这里每次重新计算灰度映射和插值变换
+    // 就应用而言，灰度窗参数变化较少，可以缓存 img_tmp
     Img<uint8_t> img_tmp = img_in_.applyGrayWindow<uint8_t>(gray_window_breadth_, gray_window_position_);
-
     img_out_=img_tmp.crop((-view_width+src_width)/2+view_offset_x_,
                           (-view_height+src_height)/2+view_offset_y_,
                           view_width, view_height, view_rotation_, view_scale_);

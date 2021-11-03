@@ -11,14 +11,14 @@ class ImgAlgCopy: public virtual ImgData<T>
 public:
     ImgAlgCopy(){}
 protected:
-    ImgData<T> _cropFast(int x0, int y0, int target_width, int target_height);
+    ImgData<T> _copySubImg(int x0, int y0, int target_width, int target_height);
 };
 
 
 //////////////////////////////////////////////
 
 template <typename T>
-ImgData<T> ImgAlgCopy<T>::_cropFast(int x0, int y0, int target_width, int target_height)
+ImgData<T> ImgAlgCopy<T>::_copySubImg(int x0, int y0, int target_width, int target_height)
 {
     ImgData<T> result(target_width, target_height, this->range_);
     memset(result.bits(), 0, target_width*target_height*sizeof(T));
