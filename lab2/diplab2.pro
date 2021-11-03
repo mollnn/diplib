@@ -4,7 +4,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
-QMAKE_CXXFLAGS += -fopenmp -mavx2 -mavx -O0
+QMAKE_CXXFLAGS += -fopenmp -mavx -mavx2 -mfma -msse -msse2 -msse3 -O0
 LIBS += -fopenmp
 
 # The following define makes your compiler emit warnings if you use
