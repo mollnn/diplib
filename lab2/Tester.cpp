@@ -45,14 +45,14 @@ void Test1::test_case3()
 
 
 
-void Test1::test_case4()
-{
-    Img<uint16_t> img(1000, 1000, 4095);
-    for(int i=0;i<1000;i++) for(int j=0;j<1000;j++) img.setPixel(j,i,rand()%4096);
-    auto img1 = img.crop(0, 0, img.width(), img.height(), 1, 1.5);
+//void Test1::test_case4()
+//{
+//    Img<uint16_t> img(1000, 1000, 4095);
+//    for(int i=0;i<1000;i++) for(int j=0;j<1000;j++) img.setPixel(j,i,rand()%4096);
+//    auto img1 = img.crop(0, 0, img.width(), img.height(), 1, 1.5);
 //    auto img2 = img.crop_base(0, 0, img.width(), img.height(), 1, 1.5);
 //    double mse = 0;
 //    for(int i=0;i<1000;i++) for(int j=0;j<1000;j++) mse+=pow(img1.pixel(j,i)-img2.pixel(j,i),2);
 //    mse /= 1e6;
 //    qDebug()<<"MSE ="<<mse;
-}
+//}

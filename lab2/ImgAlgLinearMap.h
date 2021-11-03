@@ -5,7 +5,7 @@
 
 
 #include <immintrin.h>
-#include <avx2intrin.h>
+
 
 template <typename T>
 class ImgAlgLinearMap: public virtual ImgData<T>

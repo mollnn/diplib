@@ -18,7 +18,7 @@ private slots:
     void test_case2();
     void test_case3();
 
-    void test_case4();
+//    void test_case4();
 };
 
 
