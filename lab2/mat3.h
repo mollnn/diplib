@@ -31,6 +31,7 @@ struct mat3
     float det() const;
     mat3 inverse() const;
     mat3 transpose() const;
+    void to_floats(float*) const;
 };
 
 

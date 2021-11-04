@@ -8,7 +8,7 @@
 #include <xmmintrin.h>
 #include <avx2intrin.h>
 
-#include "ImgAlgInterp_Cuda.h"
+#include "ImgAlg_Cuda.h"
 
 template <typename T>
 class ImgAlgInterp : public virtual ImgData<T>
@@ -28,7 +28,11 @@ private:
     void _interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float* x_coords, float* y_coords,  int dest_width, int dest_height, int src_width, int src_height, T default_value);
 };
 
-///////////////////////////////////////////////
+
+//////////////////////////////////////////////
+///
+/// See ImgAlgAffine.h for BENCHMARK PERFORMANCE
+///
 
 template <typename T>
 T ImgAlgInterp<T>::_pxInterpBilinear(float x, float y)

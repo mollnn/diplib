@@ -10,6 +10,8 @@
 #include <xmmintrin.h>
 #include <avx2intrin.h>
 
+#include "ImgAlg_Cuda.h"
+
 template <typename T>
 class ImgAlgAffine : public virtual ImgAlgInterp<T>
 {
@@ -22,11 +24,34 @@ protected:
     ImgData<T> _transformAffine_Fast(const mat3 &transform_matrix, int target_width, int target_height);
     ImgData<T> _transformAffine_Avx2_sep(const mat3 &transform_matrix, int target_width, int target_height);
     ImgData<T> _transformAffine_Avx2(const mat3 &transform_matrix, int target_width, int target_height);
+//    Fixed point version can be faster. Too tired to implement it :(
+//    ImgData<T> _transformAffine_Avx2_fixpt(const mat3 &transform_matrix, int target_width, int target_height);
+    ImgData<T> _transformAffine_Cuda(const mat3 &transform_matrix, int target_width, int target_height);
+private:
+    void _transformAffine_Cuda_C(T *dest_ptr, T *src_ptr, float *mat, int dest_width, int dest_height, int src_width, int src_height, T default_value);
 };
 
 
 //////////////////////////////////////////////
-
+/// BENCHMARK PERFORMANCE
+/// Average time usage (ms) Per 1 Mega Pixels (src=dest)
+///   Release Profile
+///   Intel(R) Core i5-11300H @ 3.10GHz (4 cores 320KB/5MB/8MB)
+///   Mem 3200MHz
+///   NVIDIA GeForce MX450 (14x64 SMs, 2GB Mem, 80GBps, ~2TFlops) @CUDA 11.0
+//    Affine Serial             35.31
+//    Affine OpenMP             8.36
+//    + matmul expansion        6.16
+//    + interp avx2             5.45
+//    + matmul avx2             5.16
+//    - divide 8px inline       5.31
+//    + coords div              4.84
+//    + no mid coords           3.10
+//    + avx2 -> avx512          ...
+//    + all fixedpoint          ...
+//    Affine CUDA(no t-mem)     2.49
+/// Tester: img = img.crop(0, 0, img.width(), img.height(), 1, 1.5);
+//////////////////////////////////////////////
 
 template <typename T>
 ImgData<T> ImgAlgAffine<T>::_transformAffine_Baseline(const mat3 &transform_matrix, int target_width, int target_height)
@@ -240,7 +265,46 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Avx2(const mat3 &transform_matrix, 
 template <typename T>
 ImgData<T> ImgAlgAffine<T>::_transformAffine(const mat3 &transform_matrix, int target_width, int target_height)
 {
-    return _transformAffine_Avx2(transform_matrix, target_width, target_height);
+    return _transformAffine_Cuda(transform_matrix, target_width, target_height);
+}
+
+template <typename T>
+ImgData<T> ImgAlgAffine<T>::_transformAffine_Cuda(const mat3 &transform_matrix, int target_width, int target_height)
+{
+    ImgData<T> result( target_width, target_height, this->range_);
+    mat3 transform_matrix_inverse = transform_matrix.inverse();
+
+    auto target_data_ptr = result.bits();
+    auto source_data_ptr = this->bits();
+
+    float mat_ps[9];
+    transform_matrix_inverse.to_floats(mat_ps);
+
+    _transformAffine_Cuda_C(target_data_ptr, source_data_ptr, mat_ps, target_width, target_height,
+                           this->width_, this->height_, 0);
+
+    return result;
+}
+
+template <typename T>
+void ImgAlgAffine<T>::_transformAffine_Cuda_C(T *dest_ptr, T *src_ptr, float *mat, int dest_width, int dest_height, int src_width, int src_height, T default_value)
+{
+    // Since difference of ABI between MSVC(nvcc only support on Windows) and MinGW, we cannot dllexport & dllimport a Cpp style function, let alone template
+    // Here's a very stupid substitution -_-b
+    if(sizeof(T)==1)
+    {
+        __ImgAlgAffine_affineTransform_cuda_epi8(reinterpret_cast<uint8_t*>(dest_ptr), reinterpret_cast<uint8_t*>(src_ptr),
+                                               mat, dest_width,dest_height,src_width,src_height,default_value);
+    }
+    else if(sizeof(T)==2)
+    {
+        __ImgAlgAffine_affineTransform_cuda_epi16(reinterpret_cast<uint16_t*>(dest_ptr), reinterpret_cast<uint16_t*>(src_ptr),
+                                                 mat, dest_width,dest_height,src_width,src_height,default_value);
+    }
+    else
+    {
+        throw("Unsupported data type.");
+    }
 }
 
 #endif // IMGALGAFFINE_H

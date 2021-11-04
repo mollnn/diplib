@@ -14,7 +14,16 @@ protected:
     ImgData<T> _copySubImg(int x0, int y0, int target_width, int target_height);
 };
 
-
+//////////////////////////////////////////////
+/// BENCHMARK PERFORMANCE
+/// Average time usage (ms) Per 1 Mega Pixels (src=dest)
+///   Release Profile
+///   Intel(R) Core i5-11300H @ 3.10GHz (4 cores 320KB/5MB/8MB)
+///   Mem 3200MHz
+///   NVIDIA GeForce MX450 (14x64 SMs, 2GB Mem, 80GBps, ~2TFlops) @CUDA 11.0
+//    Crop(Copy) Serial         0.94
+//    Crop(Copy) OMP            0.75
+/// Tester: img = img.crop(0, 0, img.width(), img.height());
 //////////////////////////////////////////////
 
 template <typename T>
