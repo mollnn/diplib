@@ -15,10 +15,10 @@ public:
 
 protected:
     template <typename R=T>
-    static R __pxLinearMapSimple(T pixel, R target_range, T source_range);
+    static inline R __pxLinearMapSimple(T pixel, R target_range, T source_range);
 
     template <typename R=T>
-    static R __pxLinearMapRange(T pixel, R target_min, R target_max, T source_min, T source_max);
+    static inline R __pxLinearMapRange(T pixel, R target_min, R target_max, T source_min, T source_max);
 
     template <typename R=T>
     ImgData<R> _linearMapSimple(R target_range, T source_range);

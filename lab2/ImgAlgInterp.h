@@ -18,7 +18,7 @@ public:
 protected:
     T _pxInterpBilinear(float x, float y);
 
-    inline static __m256 __8pxInterpBilinear_Avx2_ps(float* source_image_ps, __m256 xi, __m256 yi, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value);
+    static inline __m256 __8pxInterpBilinear_Avx2_ps(float* source_image_ps, __m256 xi, __m256 yi, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value);
 
     ImgData<T> _interpBilinear(float* x_coords, float* y_coords,  int target_width, int target_height);
     ImgData<T> _interpBilinear_Baseline(float* x_coords, float* y_coords,  int target_width, int target_height);
@@ -180,7 +180,6 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* x_coords, float* y_coord
     __m256i idx_default_value = _mm256_set1_epi32(source_img_size);
 
     int width = this->width_;
-
     __m256i widths = _mm256_set1_epi32(width);
 
 #pragma omp parallel for
