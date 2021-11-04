@@ -8,16 +8,7 @@
 #include <xmmintrin.h>
 #include <avx2intrin.h>
 
-// Using ImgAlg_Cuda.dll (from *.cu)
-extern "C" void __declspec(dllimport) __ImgAlgInterp_interpBilinear_cuda_epi8
-(uint8_t *dest_ptr, uint8_t *src_ptr, float* x_coords, float* y_coords,  int dest_width, int dest_height, int src_width, int src_height, uint8_t default_value);
-
-extern "C" void __declspec(dllimport) __ImgAlgInterp_interpBilinear_cuda_epi16
-(uint16_t *dest_ptr, uint16_t *src_ptr, float* x_coords, float* y_coords,  int dest_width, int dest_height, int src_width, int src_height, uint16_t default_value);
-
-extern "C" void __declspec(dllimport) __ImgAlgInterp_interpBilinear_cuda_ps
-(float *dest_ptr, float *src_ptr, float* x_coords, float* y_coords,  int dest_width, int dest_height, int src_width, int src_height, float default_value);
-
+#include "ImgAlgInterp_Cuda.h"
 
 template <typename T>
 class ImgAlgInterp : public virtual ImgData<T>
