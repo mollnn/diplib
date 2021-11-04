@@ -33,13 +33,12 @@ protected:
 
 #ifdef IMG_ENABLE_CUDA
     ImgData<T> _transformAffine_Cuda(const mat3 &transform_matrix, int target_width, int target_height);
+
 private:
     void _transformAffine_Cuda_C(T *dest_ptr, T *src_ptr, float *mat, int dest_width, int dest_height, int src_width, int src_height, T default_value);
 #endif
 private:
 };
-
-
 
 template <typename T>
 ImgData<T> ImgAlgAffine<T>::_transformAffine_Baseline(const mat3 &transform_matrix, int target_width, int target_height)
@@ -122,28 +121,28 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Avx2_sep(const mat3 &transform_matr
         __m256 x_bias = _mm256_set1_ps(src_x0);
         __m256 y_bias = _mm256_set1_ps(src_y0);
 
-        float* x_coords_lineptr = x_coords + target_width * i;
-        float* y_coords_lineptr = y_coords + target_width * i;
+        float *x_coords_lineptr = x_coords + target_width * i;
+        float *y_coords_lineptr = y_coords + target_width * i;
 
         __m256i cols = _mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0);
 
-        for (int j = 0; j < target_width_r8; j+=8)
+        for (int j = 0; j < target_width_r8; j += 8)
         {
             __m256 cols_ps = _mm256_cvtepi32_ps(cols);
             __m256 x_prod = _mm256_mul_ps(x_weight, cols_ps);
             __m256 x_coord = _mm256_add_ps(x_prod, x_bias);
             __m256 y_prod = _mm256_mul_ps(y_weight, cols_ps);
             __m256 y_coord = _mm256_add_ps(y_prod, y_bias);
-            _mm256_storeu_ps (x_coords_lineptr + j, x_coord);
-            _mm256_storeu_ps (y_coords_lineptr + j, y_coord);
-            cols=_mm256_add_epi32(cols, deltas);
+            _mm256_storeu_ps(x_coords_lineptr + j, x_coord);
+            _mm256_storeu_ps(y_coords_lineptr + j, y_coord);
+            cols = _mm256_add_epi32(cols, deltas);
         }
-        for(int j=target_width_r8;j<target_width;j++)
+        for (int j = target_width_r8; j < target_width; j++)
         {
             float src_x = t11 * j + src_x0;
             float src_y = t21 * j + src_y0;
-            x_coords[i*target_width + j] = src_x;
-            y_coords[i*target_width + j] = src_y;
+            x_coords[i * target_width + j] = src_x;
+            y_coords[i * target_width + j] = src_y;
         }
     }
 
@@ -186,23 +185,23 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Avx2(const mat3 &transform_matrix, 
     auto target_data_ptr = result.bits();
     auto source_data_ptr = this->bits();
 
-    if(source_data_ptr==0)
+    if (source_data_ptr == 0)
     {
         memset(target_data_ptr, 0, target_width * target_height * sizeof(T));
         return result;
     }
 
     // Cast image value to float (stupid but easy)
-    float *source_image_ps = new float[source_img_size + 1];  // 末尾附加元素表示默认值
+    float *source_image_ps = new float[source_img_size + 1]; // 末尾附加元素表示默认值
     float *target_image_ps = new float[target_img_size];
 
     int width = this->width_;
     __m256i widths = _mm256_set1_epi32(width);
 
 #pragma omp parallel for
-    for(int i=0;i<source_img_size;i++)
+    for (int i = 0; i < source_img_size; i++)
     {
-        source_image_ps[i]=source_data_ptr[i];
+        source_image_ps[i] = source_data_ptr[i];
     }
     source_image_ps[source_img_size] = 0; // 默认值可自定义
 
@@ -217,7 +216,7 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Avx2(const mat3 &transform_matrix, 
 
         __m256i cols = _mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0);
 
-        for (int j = 0; j < target_width_r8; j+=8)
+        for (int j = 0; j < target_width_r8; j += 8)
         {
             __m256 cols_ps = _mm256_cvtepi32_ps(cols);
             __m256 x_prod = _mm256_mul_ps(x_weight, cols_ps);
@@ -227,21 +226,21 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Avx2(const mat3 &transform_matrix, 
             __m256 ans = ImgAlgInterp<T>::__8pxInterpBilinear_Avx2_ps(source_image_ps, x_coord, y_coord, widths, bound_x_max, bound_y_max, idx_default_value);
             _mm256_storeu_ps(target_image_ps + i * target_width + j, ans);
 
-            cols=_mm256_add_epi32(cols, deltas);
+            cols = _mm256_add_epi32(cols, deltas);
         }
 
-        for(int j=target_width_r8;j<target_width;j++)
+        for (int j = target_width_r8; j < target_width; j++)
         {
             float src_x = t11 * j + src_x0;
             float src_y = t21 * j + src_y0;
-            target_image_ps[i*target_width + j]=this->_pxInterpBilinear(src_x, src_y);
+            target_image_ps[i * target_width + j] = this->_pxInterpBilinear(src_x, src_y);
         }
     }
 
 #pragma omp parallel for
-    for(int i=0;i<target_img_size;i++)
+    for (int i = 0; i < target_img_size; i++)
     {
-        target_data_ptr[i]=target_image_ps[i];
+        target_data_ptr[i] = target_image_ps[i];
     }
 
     // Cast image value back to int
@@ -255,7 +254,7 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Avx2(const mat3 &transform_matrix, 
 template <typename T>
 ImgData<T> ImgAlgAffine<T>::_transformAffine(const mat3 &transform_matrix, int target_width, int target_height)
 {
-    #ifdef IMG_ENABLE_CUDA
+#ifdef IMG_ENABLE_CUDA
 
     return _transformAffine_Cuda(transform_matrix, target_width, target_height);
 #elif defined IMG_ENABLE_AVX2
@@ -269,7 +268,7 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine(const mat3 &transform_matrix, int t
 template <typename T>
 ImgData<T> ImgAlgAffine<T>::_transformAffine_Cuda(const mat3 &transform_matrix, int target_width, int target_height)
 {
-    ImgData<T> result( target_width, target_height, this->range_);
+    ImgData<T> result(target_width, target_height, this->range_);
     mat3 transform_matrix_inverse = transform_matrix.inverse();
 
     auto target_data_ptr = result.bits();
@@ -279,7 +278,7 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Cuda(const mat3 &transform_matrix, 
     transform_matrix_inverse.to_floats(mat_ps);
 
     _transformAffine_Cuda_C(target_data_ptr, source_data_ptr, mat_ps, target_width, target_height,
-                           this->width_, this->height_, 0);
+                            this->width_, this->height_, 0);
 
     return result;
 }
@@ -289,15 +288,15 @@ void ImgAlgAffine<T>::_transformAffine_Cuda_C(T *dest_ptr, T *src_ptr, float *ma
 {
     // Since difference of ABI between MSVC(nvcc only support on Windows) and MinGW, we cannot dllexport & dllimport a Cpp style function, let alone template
     // Here's a very stupid substitution -_-b
-    if(sizeof(T)==1)
+    if (sizeof(T) == 1)
     {
-        __ImgAlgAffine_affineTransform_cuda_epi8(reinterpret_cast<uint8_t*>(dest_ptr), reinterpret_cast<uint8_t*>(src_ptr),
-                                               mat, dest_width,dest_height,src_width,src_height,default_value);
+        __ImgAlgAffine_affineTransform_cuda_epi8(reinterpret_cast<uint8_t *>(dest_ptr), reinterpret_cast<uint8_t *>(src_ptr),
+                                                 mat, dest_width, dest_height, src_width, src_height, default_value);
     }
-    else if(sizeof(T)==2)
+    else if (sizeof(T) == 2)
     {
-        __ImgAlgAffine_affineTransform_cuda_epi16(reinterpret_cast<uint16_t*>(dest_ptr), reinterpret_cast<uint16_t*>(src_ptr),
-                                                 mat, dest_width,dest_height,src_width,src_height,default_value);
+        __ImgAlgAffine_affineTransform_cuda_epi16(reinterpret_cast<uint16_t *>(dest_ptr), reinterpret_cast<uint16_t *>(src_ptr),
+                                                  mat, dest_width, dest_height, src_width, src_height, default_value);
     }
     else
     {
@@ -305,6 +304,5 @@ void ImgAlgAffine<T>::_transformAffine_Cuda_C(T *dest_ptr, T *src_ptr, float *ma
     }
 }
 #endif
-
 
 #endif // IMGALGAFFINE_H

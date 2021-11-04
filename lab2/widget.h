@@ -30,14 +30,16 @@ class Widget : public QWidget
     void _saveImage();
     void _reLayout();
 
-    void resizeEvent(QResizeEvent * event);
+    void resizeEvent(QResizeEvent *event);
 
 public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
+
 protected:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
+
 private:
     QString filename_in_;
     QString filename_out_;
@@ -50,8 +52,6 @@ private:
     int gray_window_breadth_;
     int gray_window_position_;
     bool is_ctrl_pressed_;
-
-
 
     QImagePlotBox *img_plot_box_;
 
@@ -68,7 +68,5 @@ private:
     QPushButton *button_open_;
 
     QGridLayout *grid_layout_;
-
-
 };
 #endif // WIDGET_H

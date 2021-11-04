@@ -32,7 +32,7 @@
 //#define IMG_ENABLE_CUDA     // 注释该行以禁用 CUDA
 #endif
 #ifndef IMG_ENABLE_AVX2
-#define IMG_ENABLE_AVX2     // 注释该行以禁用 AVX2
+#define IMG_ENABLE_AVX2 // 注释该行以禁用 AVX2
 #endif
 
 #include "ImgConvert.h"
@@ -48,7 +48,7 @@ public:
     Img(Img &&img) : ImgData<T>(img) {}
     Img(const ImgData<T> &img) : ImgData<T>(img) {}
     Img(ImgData<T> &&img) : ImgData<T>(img) {}
-    Img(int width, int height, T range): ImgData<T>(width,height,range) {}
+    Img(int width, int height, T range) : ImgData<T>(width, height, range) {}
     Img &operator=(const Img &img);
     Img &operator=(Img &&img);
     Img &operator=(const ImgData<T> &img);
@@ -58,28 +58,28 @@ public:
 //////////////////////////////////////////////
 
 template <typename T>
-Img<T>& Img<T>::operator=(const Img<T> &img)
+Img<T> &Img<T>::operator=(const Img<T> &img)
 {
     ImgData<T>::operator=(img);
     return *this;
 }
 
 template <typename T>
-Img<T>& Img<T>::operator=(Img<T> &&img)
+Img<T> &Img<T>::operator=(Img<T> &&img)
 {
     ImgData<T>::operator=(std::move(img));
     return *this;
 }
 
 template <typename T>
-Img<T>& Img<T>::operator=(const ImgData<T> &img)
+Img<T> &Img<T>::operator=(const ImgData<T> &img)
 {
     ImgData<T>::operator=(img);
     return *this;
 }
 
 template <typename T>
-Img<T>& Img<T>::operator=(ImgData<T> &&img)
+Img<T> &Img<T>::operator=(ImgData<T> &&img)
 {
     ImgData<T>::operator=(std::move(img));
     return *this;

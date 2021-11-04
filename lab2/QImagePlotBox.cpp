@@ -18,7 +18,7 @@ QImagePlotBox::QImagePlotBox(QWidget *parent) : QWidget(parent)
     size_policy.setHorizontalPolicy(QSizePolicy::Expanding);
     this->setSizePolicy(size_policy);
 
-    this->is_mouse_pressed_=false;
+    this->is_mouse_pressed_ = false;
 }
 
 void QImagePlotBox::imshow(const QImage &img)
@@ -26,7 +26,7 @@ void QImagePlotBox::imshow(const QImage &img)
     label_->setPixmap(QPixmap::fromImage(img.copy()));
 }
 
-void QImagePlotBox::resizeEvent(QResizeEvent * event)
+void QImagePlotBox::resizeEvent(QResizeEvent *event)
 {
     label_->setFixedSize(this->size());
     event->accept();
@@ -34,30 +34,30 @@ void QImagePlotBox::resizeEvent(QResizeEvent * event)
 
 void QImagePlotBox::mousePressEvent(QMouseEvent *event)
 {
-    this->drag_last_pos_=event->pos();
-    this->is_mouse_pressed_=true;
+    this->drag_last_pos_ = event->pos();
+    this->is_mouse_pressed_ = true;
     event->accept();
 }
 
 void QImagePlotBox::mouseMoveEvent(QMouseEvent *event)
 {
-    if(this->is_mouse_pressed_)
+    if (this->is_mouse_pressed_)
     {
         auto current_pos = event->pos();
-        emit dragSignal(current_pos.x()-drag_last_pos_.x(), current_pos.y()-drag_last_pos_.y());
-        this->drag_last_pos_=current_pos;
+        emit dragSignal(current_pos.x() - drag_last_pos_.x(), current_pos.y() - drag_last_pos_.y());
+        this->drag_last_pos_ = current_pos;
     }
     event->accept();
 }
 
 void QImagePlotBox::mouseReleaseEvent(QMouseEvent *event)
 {
-    if(this->is_mouse_pressed_)
+    if (this->is_mouse_pressed_)
     {
         auto current_pos = event->pos();
-        emit dragSignal(current_pos.x()-drag_last_pos_.x(), current_pos.y()-drag_last_pos_.y());
-        this->drag_last_pos_=current_pos;
-        this->is_mouse_pressed_=false;
+        emit dragSignal(current_pos.x() - drag_last_pos_.x(), current_pos.y() - drag_last_pos_.y());
+        this->drag_last_pos_ = current_pos;
+        this->is_mouse_pressed_ = false;
     }
     event->accept();
 }

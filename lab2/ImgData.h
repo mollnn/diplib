@@ -33,7 +33,7 @@ public:
     void setRange(T range);
     T range() const;
     void clear();
-    T* bits();
+    T *bits();
 };
 
 template <typename T>
@@ -165,7 +165,7 @@ T ImgData<T>::range() const
 }
 
 template <typename T>
-T* ImgData<T>::bits()
+T *ImgData<T>::bits()
 {
     return data_;
 }

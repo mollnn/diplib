@@ -14,7 +14,7 @@ public:
     ImgConvert();
     void fromQImage(const QImage &qimage);
     QImage toQImage();
-    void fromRaw(const QString& filename);
+    void fromRaw(const QString &filename);
 };
 
 template <typename T>
@@ -56,9 +56,9 @@ QImage ImgConvert<T>::toQImage()
             for (int i = 0; i < this->height_; i++)
                 memcpy(tmp_data + i * ((this->width_ + 3) / 4 * 4), this->data_ + i * this->width_, sizeof(T) * this->width_);
             return QImage(
-                        reinterpret_cast<uchar *>(tmp_data), this->width_, this->height_, QImage::Format_Grayscale8, [](void *ptr)
-            { delete[](uchar *) ptr; },
-            tmp_data);
+                reinterpret_cast<uchar *>(tmp_data), this->width_, this->height_, QImage::Format_Grayscale8, [](void *ptr)
+                { delete[](uchar *) ptr; },
+                tmp_data);
         }
         else if (sizeof(T) == 2)
         {
@@ -66,9 +66,9 @@ QImage ImgConvert<T>::toQImage()
             for (int i = 0; i < this->height_; i++)
                 memcpy(tmp_data + i * ((this->width_ + 1) / 2 * 2), this->data_ + i * this->width_, sizeof(T) * this->width_);
             return QImage(
-                        reinterpret_cast<uchar *>(tmp_data), this->width_, this->height_, QImage::Format_Grayscale16, [](void *ptr)
-            { delete[](uchar *) ptr; },
-            tmp_data);
+                reinterpret_cast<uchar *>(tmp_data), this->width_, this->height_, QImage::Format_Grayscale16, [](void *ptr)
+                { delete[](uchar *) ptr; },
+                tmp_data);
         }
         else
             throw("Unsupported ImgData Pixel Type!");
@@ -85,36 +85,36 @@ QImage ImgConvert<T>::toQImage()
             }
         }
         QImage result(
-                    reinterpret_cast<uchar *>(tmp_data), this->width_, this->height_, QImage::Format_Grayscale16, [](void *ptr)
-        { delete[](uchar *) ptr; },
-        tmp_data);
+            reinterpret_cast<uchar *>(tmp_data), this->width_, this->height_, QImage::Format_Grayscale16, [](void *ptr)
+            { delete[](uchar *) ptr; },
+            tmp_data);
         return result;
     }
 }
 
 template <typename T>
-void ImgConvert<T>::fromRaw(const QString& filename)
+void ImgConvert<T>::fromRaw(const QString &filename)
 {
     QFile file(filename);
     file.open(QIODevice::ReadOnly);
     QDataStream in(&file);
 
-    this->range_=4095;
+    this->range_ = 4095;
 
     quint32 width;
     quint32 height;
-    in.readRawData(reinterpret_cast<char*>(&width),4);
-    in.readRawData(reinterpret_cast<char*>(&height),4);
-    this->width_=width;
-    this->height_=height;
+    in.readRawData(reinterpret_cast<char *>(&width), 4);
+    in.readRawData(reinterpret_cast<char *>(&height), 4);
+    this->width_ = width;
+    this->height_ = height;
 
     this->_allocate();
 
-    in.readRawData(reinterpret_cast<char*>(this->data_), width*height*2);
+    in.readRawData(reinterpret_cast<char *>(this->data_), width * height * 2);
 
-    for(int i=0;i<width*height;i++)
+    for (int i = 0; i < width * height; i++)
     {
-        this->data_[i]&=0x0fff;
+        this->data_[i] &= 0x0fff;
     }
 }
 

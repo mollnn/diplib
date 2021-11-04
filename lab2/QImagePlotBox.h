@@ -12,10 +12,11 @@ private:
     QLabel *label_;
     QPoint drag_last_pos_;
     bool is_mouse_pressed_;
+
 public:
     explicit QImagePlotBox(QWidget *parent = nullptr);
     void imshow(const QImage &img);
-    void resizeEvent(QResizeEvent * event);
+    void resizeEvent(QResizeEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
