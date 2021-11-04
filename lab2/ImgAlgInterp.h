@@ -8,6 +8,15 @@
 #include <xmmintrin.h>
 #include <avx2intrin.h>
 
+// Using ImgAlg_Cuda.dll (from *.cu)
+extern "C" void __declspec(dllimport) __ImgAlgInterp_interpBilinear_cuda_epi8
+(uint8_t *dest_ptr, uint8_t *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, uint8_t default_value);
+
+extern "C" void __declspec(dllimport) __ImgAlgInterp_interpBilinear_cuda_epi16
+(uint16_t *dest_ptr, uint16_t *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, uint16_t default_value);
+
+extern "C" void __declspec(dllimport) __ImgAlgInterp_interpBilinear_cuda_ps
+(float *dest_ptr, float *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, float default_value);
 
 
 template <typename T>
@@ -20,8 +29,9 @@ protected:
     ImgData<T> _interpBilinear(float* coords, int target_width, int target_height);
     ImgData<T> _interpBilinear_Baseline(float* coords, int target_width, int target_height);
     ImgData<T> _interpBilinear_Avx2(float* coords, int target_width, int target_height);
+    ImgData<T> _interpBilinear_Cuda(float* coords, int target_width, int target_height);
 private:
-    //    static __m256 __8pxInterpBilinear_Avx2(const float* image, const int image_width, const __m256 xi, const __m256 yi);
+    void _interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, T default_value);
 };
 
 ///////////////////////////////////////////////
@@ -41,7 +51,7 @@ T ImgAlgInterp<T>::_pxInterpBilinear(float x, float y)
 template <typename T>
 ImgData<T> ImgAlgInterp<T>::_interpBilinear(float* coords, int target_width, int target_height)
 {
-    return _interpBilinear_Avx2(coords, target_width, target_height);
+    return _interpBilinear_Cuda(coords, target_width, target_height);
 }
 
 
@@ -186,7 +196,6 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width
         _mm256_storeu_ps(target_image_ps + i, ans);
     }
 
-    // 处理剩下的几个像素
     for(int i=target_img_size_r8;i<target_img_size;i++)
     {
         float x=coords[i*2+0];
@@ -207,5 +216,40 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width
     return result;
 }
 
+
+template <typename T>
+ImgData<T> ImgAlgInterp<T>::_interpBilinear_Cuda(float* coords, int target_width, int target_height)
+{
+    ImgData<T> result( target_width, target_height, this->range_);
+
+    auto target_data_ptr = result.bits();
+    auto source_data_ptr = this->bits();
+
+    _interpBilinear_Cuda_C(target_data_ptr, source_data_ptr, coords, target_width, target_height,
+                           this->width_, this->height_, 0);
+
+    return result;
+}
+
+template <typename T>
+void ImgAlgInterp<T>::_interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, T default_value)
+{
+    // Since difference of ABI between MSVC(nvcc only support on Windows) and MinGW, we cannot dllexport & dllimport a Cpp style function, let alone template
+    // Here's a very stupid substitution -_-b
+    if(sizeof(T)==1)
+    {
+        __ImgAlgInterp_interpBilinear_cuda_epi8(reinterpret_cast<uint8_t*>(dest_ptr), reinterpret_cast<uint8_t*>(src_ptr),
+                                                coords, dest_width,dest_height,src_width,src_height,default_value);
+    }
+    else if(sizeof(T)==2)
+    {
+        __ImgAlgInterp_interpBilinear_cuda_epi16(reinterpret_cast<uint16_t*>(dest_ptr), reinterpret_cast<uint16_t*>(src_ptr),
+                                                 coords, dest_width,dest_height,src_width,src_height,default_value);
+    }
+    else
+    {
+        throw("Unsupported data type.");
+    }
+}
 
 #endif // IMGALGINTERPOLATE_H

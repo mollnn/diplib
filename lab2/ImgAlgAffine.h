@@ -123,7 +123,7 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Avx2(const mat3 &transform_matrix, 
         }
     }
 
-    auto result = this->_interpBilinear_Avx2(coords, target_width, target_height);
+    auto result = this->_interpBilinear_Cuda(coords, target_width, target_height);
 
     delete[] coords;
     return result;
