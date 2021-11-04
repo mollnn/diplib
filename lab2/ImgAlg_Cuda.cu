@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 template <typename T>
-__global__ void __kernel_ImgAlgInterp_interpBilinear_cuda(T *dest_ptr_d, T *src_ptr_d, float *coords_d, int dest_width, int dest_height, int src_width, int src_height, T default_value)
+__global__ void __kernel_ImgAlgInterp_interpBilinear_cuda(T *dest_ptr_d, T *src_ptr_d, float *x_coords_d, float *y_coords_d, int dest_width, int dest_height, int src_width, int src_height, T default_value)
 {
     int dest_x = blockDim.x * blockIdx.x + threadIdx.x;
     int dest_y = blockDim.y * blockIdx.y + threadIdx.y;
@@ -13,8 +13,8 @@ __global__ void __kernel_ImgAlgInterp_interpBilinear_cuda(T *dest_ptr_d, T *src_
 
     int dest_idx = dest_y * dest_width + dest_x;
 
-    float x = coords_d[2 * dest_idx + 0];
-    float y = coords_d[2 * dest_idx + 1];
+    float x = x_coords_d[dest_idx];
+    float y = y_coords_d[dest_idx];
 
     int x0 = x;
     int x1 = x0 + 1;
@@ -43,21 +43,24 @@ __global__ void __kernel_ImgAlgInterp_interpBilinear_cuda(T *dest_ptr_d, T *src_
 }
 
 template <typename T>
-void  __ImgAlgInterp_interpBilinear_cuda_(T *dest_ptr, T *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, T default_value)
+void __ImgAlgInterp_interpBilinear_cuda_(T *dest_ptr, T *src_ptr, float *x_coords, float *y_coords, int dest_width, int dest_height, int src_width, int src_height, T default_value)
 {
     int src_size = src_width * src_height;
     int dest_size = dest_width * dest_height;
 
     T *dest_ptr_d;
     T *src_ptr_d;
-    float *coords_d;
+    float *x_coords_d;
+    float *y_coords_d;
 
     cudaMalloc(&dest_ptr_d, dest_size * sizeof(T));
     cudaMalloc(&src_ptr_d, src_size * sizeof(T));
-    cudaMalloc(&coords_d, dest_size * 2 * sizeof(float));
+    cudaMalloc(&x_coords_d, dest_size * sizeof(float));
+    cudaMalloc(&y_coords_d, dest_size * sizeof(float));
 
     cudaMemcpy(src_ptr_d, src_ptr, src_size * sizeof(T), cudaMemcpyHostToDevice);
-    cudaMemcpy(coords_d, coords, dest_size * 2 * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(x_coords_d, x_coords, dest_size * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(y_coords_d, y_coords, dest_size * sizeof(float), cudaMemcpyHostToDevice);
 
     int block_width = 8;
     int block_height = 8;
@@ -65,57 +68,33 @@ void  __ImgAlgInterp_interpBilinear_cuda_(T *dest_ptr, T *src_ptr, float *coords
     int grid_width = (dest_width + block_width - 1) / block_width;
     int grid_height = (dest_height + block_height - 1) / block_height;
 
-    __kernel_ImgAlgInterp_interpBilinear_cuda<T><<<dim3(grid_width, grid_height), dim3(block_width, block_height)>>>(dest_ptr_d, src_ptr_d, coords_d, dest_width, dest_height, src_width, src_height, default_value);
+    __kernel_ImgAlgInterp_interpBilinear_cuda<T><<<dim3(grid_width, grid_height), dim3(block_width, block_height)>>>(dest_ptr_d, src_ptr_d, x_coords_d, y_coords_d, dest_width, dest_height, src_width, src_height, default_value);
     cudaDeviceSynchronize();
 
     cudaMemcpy(dest_ptr, dest_ptr_d, dest_size * sizeof(T), cudaMemcpyDeviceToHost);
 
     cudaFree(dest_ptr_d);
     cudaFree(src_ptr_d);
-    cudaFree(coords_d);
+    cudaFree(x_coords_d);
+    cudaFree(y_coords_d);
 }
 
-// template
-// void  __declspec(dllexport) __ImgAlgInterp_interpBilinear_cuda <uint8_t>(uint8_t *dest_ptr, uint8_t *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, uint8_t default_value);
-
-// template
-// void  __declspec(dllexport) __ImgAlgInterp_interpBilinear_cuda <uint16_t>(T *dest_ptr, T *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, T default_value);
-
-// template
-// void  __declspec(dllexport) __ImgAlgInterp_interpBilinear_cuda <float>(T *dest_ptr, T *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, T default_value);
-
-
-extern "C" void __declspec(dllexport) __ImgAlgInterp_interpBilinear_cuda_epi8(uint8_t *dest_ptr, uint8_t *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, uint8_t default_value)
+extern "C" void __declspec(dllexport) __ImgAlgInterp_interpBilinear_cuda_epi8(uint8_t *dest_ptr, uint8_t *src_ptr, float *x_coords, float *y_coords, int dest_width, int dest_height, int src_width, int src_height, uint8_t default_value)
 {
-    __ImgAlgInterp_interpBilinear_cuda_<uint8_t>(dest_ptr, src_ptr, coords, dest_width,dest_height,src_width,src_height,default_value);
+    __ImgAlgInterp_interpBilinear_cuda_<uint8_t>(dest_ptr, src_ptr, x_coords, y_coords, dest_width, dest_height, src_width, src_height, default_value);
 }
 
-extern "C" void __declspec(dllexport) __ImgAlgInterp_interpBilinear_cuda_epi16(uint16_t *dest_ptr, uint16_t *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, uint16_t default_value)
+extern "C" void __declspec(dllexport) __ImgAlgInterp_interpBilinear_cuda_epi16(uint16_t *dest_ptr, uint16_t *src_ptr, float *x_coords, float *y_coords, int dest_width, int dest_height, int src_width, int src_height, uint16_t default_value)
 {
-    __ImgAlgInterp_interpBilinear_cuda_<uint16_t>(dest_ptr, src_ptr, coords, dest_width,dest_height,src_width,src_height,default_value);
+    __ImgAlgInterp_interpBilinear_cuda_<uint16_t>(dest_ptr, src_ptr, x_coords, y_coords, dest_width, dest_height, src_width, src_height, default_value);
 }
 
-extern "C" void __declspec(dllexport) __ImgAlgInterp_interpBilinear_cuda_ps(float *dest_ptr, float *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, float default_value)
+extern "C" void __declspec(dllexport) __ImgAlgInterp_interpBilinear_cuda_ps(float *dest_ptr, float *src_ptr, float *x_coords, float *y_coords, int dest_width, int dest_height, int src_width, int src_height, float default_value)
 {
-    __ImgAlgInterp_interpBilinear_cuda_<float>(dest_ptr, src_ptr, coords, dest_width,dest_height,src_width,src_height,default_value);
+    __ImgAlgInterp_interpBilinear_cuda_<float>(dest_ptr, src_ptr, x_coords, y_coords, dest_width, dest_height, src_width, src_height, default_value);
 }
 
 extern "C" void __declspec(dllexport) test()
 {
     printf("ok");
 }
-
-// int main()
-// {
-//     int w = 10000;
-//     int h = 10000;
-//     uint16_t *a = (uint16_t *)malloc(w * h * sizeof(uint16_t));
-//     uint16_t *b = (uint16_t *)malloc(w * h * sizeof(uint16_t));
-//     float *c = (float *)malloc(w * h * 2 * sizeof(float));
-//     for (int i = 0; i < w * h; i++)
-//     {
-//         c[i * 2 + 0] = i * i * 1e-4;
-//         c[i * 2 + 1] = i * i * 1e-4;
-//     }
-//     __ImgAlgInterp_interpBilinear_cuda<uint16_t>(b, a, c, w, h, w, h, 0);
-// }

@@ -10,13 +10,13 @@
 
 // Using ImgAlg_Cuda.dll (from *.cu)
 extern "C" void __declspec(dllimport) __ImgAlgInterp_interpBilinear_cuda_epi8
-(uint8_t *dest_ptr, uint8_t *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, uint8_t default_value);
+(uint8_t *dest_ptr, uint8_t *src_ptr, float* x_coords, float* y_coords,  int dest_width, int dest_height, int src_width, int src_height, uint8_t default_value);
 
 extern "C" void __declspec(dllimport) __ImgAlgInterp_interpBilinear_cuda_epi16
-(uint16_t *dest_ptr, uint16_t *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, uint16_t default_value);
+(uint16_t *dest_ptr, uint16_t *src_ptr, float* x_coords, float* y_coords,  int dest_width, int dest_height, int src_width, int src_height, uint16_t default_value);
 
 extern "C" void __declspec(dllimport) __ImgAlgInterp_interpBilinear_cuda_ps
-(float *dest_ptr, float *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, float default_value);
+(float *dest_ptr, float *src_ptr, float* x_coords, float* y_coords,  int dest_width, int dest_height, int src_width, int src_height, float default_value);
 
 
 template <typename T>
@@ -27,14 +27,14 @@ public:
 protected:
     T _pxInterpBilinear(float x, float y);
 
-    inline static __m256 __8pxInterpBilinear_Avx2_ps(float* source_image_ps, __m256 xi, __m256 yi, int target_width, int target_height, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value);
+    inline static __m256 __8pxInterpBilinear_Avx2_ps(float* source_image_ps, __m256 xi, __m256 yi, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value);
 
-    ImgData<T> _interpBilinear(float* coords, int target_width, int target_height);
-    ImgData<T> _interpBilinear_Baseline(float* coords, int target_width, int target_height);
-    ImgData<T> _interpBilinear_Avx2(float* coords, int target_width, int target_height);
-    ImgData<T> _interpBilinear_Cuda(float* coords, int target_width, int target_height);
+    ImgData<T> _interpBilinear(float* x_coords, float* y_coords,  int target_width, int target_height);
+    ImgData<T> _interpBilinear_Baseline(float* x_coords, float* y_coords,  int target_width, int target_height);
+    ImgData<T> _interpBilinear_Avx2(float* x_coords, float* y_coords, int target_width, int target_height);
+    ImgData<T> _interpBilinear_Cuda(float* x_coords, float* y_coords,  int target_width, int target_height);
 private:
-    void _interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, T default_value);
+    void _interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float* x_coords, float* y_coords,  int dest_width, int dest_height, int src_width, int src_height, T default_value);
 };
 
 ///////////////////////////////////////////////
@@ -52,14 +52,14 @@ T ImgAlgInterp<T>::_pxInterpBilinear(float x, float y)
 
 
 template <typename T>
-ImgData<T> ImgAlgInterp<T>::_interpBilinear(float* coords, int target_width, int target_height)
+ImgData<T> ImgAlgInterp<T>::_interpBilinear(float* x_coords, float* y_coords, int target_width, int target_height)
 {
-    return _interpBilinear_Cuda(coords, target_width, target_height);
+    return _interpBilinear_Cuda(x_coords, y_coords, target_width, target_height);
 }
 
 
 template <typename T>
-ImgData<T> ImgAlgInterp<T>::_interpBilinear_Baseline(float* coords, int target_width, int target_height)
+ImgData<T> ImgAlgInterp<T>::_interpBilinear_Baseline(float* x_coords, float* y_coords, int target_width, int target_height)
 {
     ImgData<T> result( target_width, target_height, this->range_);
     auto target_data_ptr = result.bits();
@@ -68,7 +68,7 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Baseline(float* coords, int target_w
         for(int j=0;j<target_width;j++)
         {
             int idx = i*target_width+j;
-            target_data_ptr[idx] = this->_pxInterpBilinear(coords[2*idx+0], coords[2*idx+1]);
+            target_data_ptr[idx] = this->_pxInterpBilinear(x_coords[idx], y_coords[idx]);
         }
     }
     return result;
@@ -76,9 +76,8 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Baseline(float* coords, int target_w
 
 
 template <typename T>
-inline __m256 ImgAlgInterp<T>::__8pxInterpBilinear_Avx2_ps(float* source_image_ps, __m256 xi, __m256 yi, int target_width, int target_height, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value)
+inline __m256 ImgAlgInterp<T>::__8pxInterpBilinear_Avx2_ps(float* source_image_ps, __m256 xi, __m256 yi, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value)
 {
-
     static __m256i bound_x_min = _mm256_setzero_si256();
     static __m256i bound_y_min = _mm256_setzero_si256();
     static __m256 const1s = _mm256_set1_ps(1);
@@ -155,7 +154,7 @@ inline __m256 ImgAlgInterp<T>::__8pxInterpBilinear_Avx2_ps(float* source_image_p
 
 
 template <typename T>
-ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width, int target_height)
+ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* x_coords, float* y_coords, int target_width, int target_height)
 {
     ImgData<T> result( target_width, target_height, this->range_);
 
@@ -168,12 +167,11 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width
         return result;
     }
 
-    // assume sizeof(T)=2
     int source_img_size = this->width_ * this->height_;
     int target_img_size = target_width * target_height;
     int target_img_size_r8 = target_img_size / 8 * 8;
 
-    // Cast image value to float
+    // Cast image value to float (stupid but easy)
     float *source_image_ps = new float[source_img_size + 1];  // 末尾附加元素表示默认值
     float *target_image_ps = new float[target_img_size];
 
@@ -192,29 +190,23 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width
 
     int width = this->width_;
 
-    static __m256i coords_index_offsets_x = _mm256_set_epi32(14, 12, 10, 8, 6, 4, 2, 0);
-    static __m256i coords_index_offsets_y = _mm256_set_epi32(15, 13, 11, 9, 7, 5, 3, 1);
-
     __m256i widths = _mm256_set1_epi32(width);
 
 #pragma omp parallel for
     for(int i=0;i<target_img_size_r8;i+=8)
     {
-        __m256i coords_index_base = _mm256_set1_epi32(2*i);
-        __m256i coords_index_x = _mm256_add_epi32(coords_index_base, coords_index_offsets_x);
-        __m256i coords_index_y = _mm256_add_epi32(coords_index_base, coords_index_offsets_y);
-        __m256 xi = _mm256_i32gather_ps(coords, coords_index_x, 4);
-        __m256 yi = _mm256_i32gather_ps(coords, coords_index_y, 4);
+        __m256 xi = _mm256_loadu_ps(x_coords + i);
+        __m256 yi = _mm256_loadu_ps(y_coords + i);
 
-        __m256 ans = __8pxInterpBilinear_Avx2_ps(source_image_ps, xi, yi, target_width, target_height, widths, bound_x_max, bound_y_max, idx_default_value);
+        __m256 ans = __8pxInterpBilinear_Avx2_ps(source_image_ps, xi, yi, widths, bound_x_max, bound_y_max, idx_default_value);
 
         _mm256_storeu_ps(target_image_ps + i, ans);
     }
 
     for(int i=target_img_size_r8;i<target_img_size;i++)
     {
-        float x=coords[i*2+0];
-        float y=coords[i*2+1];
+        float x=x_coords[i];
+        float y=y_coords[i];
         target_image_ps[i] = _pxInterpBilinear(x,y);
     }
 
@@ -233,33 +225,33 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width
 
 
 template <typename T>
-ImgData<T> ImgAlgInterp<T>::_interpBilinear_Cuda(float* coords, int target_width, int target_height)
+ImgData<T> ImgAlgInterp<T>::_interpBilinear_Cuda(float* x_coords, float* y_coords, int target_width, int target_height)
 {
     ImgData<T> result( target_width, target_height, this->range_);
 
     auto target_data_ptr = result.bits();
     auto source_data_ptr = this->bits();
 
-    _interpBilinear_Cuda_C(target_data_ptr, source_data_ptr, coords, target_width, target_height,
+    _interpBilinear_Cuda_C(target_data_ptr, source_data_ptr, x_coords, y_coords, target_width, target_height,
                            this->width_, this->height_, 0);
 
     return result;
 }
 
 template <typename T>
-void ImgAlgInterp<T>::_interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float *coords, int dest_width, int dest_height, int src_width, int src_height, T default_value)
+void ImgAlgInterp<T>::_interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float* x_coords, float* y_coords,  int dest_width, int dest_height, int src_width, int src_height, T default_value)
 {
     // Since difference of ABI between MSVC(nvcc only support on Windows) and MinGW, we cannot dllexport & dllimport a Cpp style function, let alone template
     // Here's a very stupid substitution -_-b
     if(sizeof(T)==1)
     {
         __ImgAlgInterp_interpBilinear_cuda_epi8(reinterpret_cast<uint8_t*>(dest_ptr), reinterpret_cast<uint8_t*>(src_ptr),
-                                                coords, dest_width,dest_height,src_width,src_height,default_value);
+                                                x_coords, y_coords, dest_width,dest_height,src_width,src_height,default_value);
     }
     else if(sizeof(T)==2)
     {
         __ImgAlgInterp_interpBilinear_cuda_epi16(reinterpret_cast<uint16_t*>(dest_ptr), reinterpret_cast<uint16_t*>(src_ptr),
-                                                 coords, dest_width,dest_height,src_width,src_height,default_value);
+                                                 x_coords, y_coords, dest_width,dest_height,src_width,src_height,default_value);
     }
     else
     {

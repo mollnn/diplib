@@ -88,12 +88,15 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Avx2(const mat3 &transform_matrix, 
     float t22 = transform_matrix_inverse[1][1];
     float t23 = transform_matrix_inverse[1][2];
 
-    float *coords = new float[target_width * target_height * 2];
+    float *x_coords = new float[target_width * target_height];
+    float *y_coords = new float[target_width * target_height];
 
-    int target_width_r4 = target_width / 4 * 4;
+    int target_width_r8 = target_width / 8 * 8;
 
-    __m256 weight = _mm256_set_ps(t21, t11, t21, t11, t21, t11, t21, t11);
-    __m256i deltas = _mm256_set1_epi32(4);
+    __m256 x_weight = _mm256_set1_ps(t11);
+    __m256 y_weight = _mm256_set1_ps(t21);
+
+    __m256i deltas = _mm256_set1_epi32(8);
 
 #pragma omp parallel for
     for (int i = 0; i < target_height; i++)
@@ -101,31 +104,38 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Avx2(const mat3 &transform_matrix, 
         float src_x0 = t12 * i + t13;
         float src_y0 = t22 * i + t23;
 
-        __m256 bias = _mm256_set_ps(src_y0, src_x0, src_y0, src_x0, src_y0, src_x0, src_y0, src_x0);
+        __m256 x_bias = _mm256_set1_ps(src_x0);
+        __m256 y_bias = _mm256_set1_ps(src_y0);
 
-        float* coords_lineptr = coords + target_width * 2 * i;
-        __m256i cols = _mm256_set_epi32(3, 3, 2, 2, 1, 1, 0, 0);
+        float* x_coords_lineptr = x_coords + target_width * i;
+        float* y_coords_lineptr = y_coords + target_width * i;
 
-        for (int j = 0; j < target_width_r4; j+=4)
+        __m256i cols = _mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0);
+
+        for (int j = 0; j < target_width_r8; j+=8)
         {
             __m256 cols_ps = _mm256_cvtepi32_ps(cols);
-            __m256 prod = _mm256_mul_ps(weight, cols_ps);
-            __m256 coord = _mm256_add_ps(prod, bias);
-            _mm256_storeu_ps (coords_lineptr + j*2, coord);
+            __m256 x_prod = _mm256_mul_ps(x_weight, cols_ps);
+            __m256 x_coord = _mm256_add_ps(x_prod, x_bias);
+            __m256 y_prod = _mm256_mul_ps(y_weight, cols_ps);
+            __m256 y_coord = _mm256_add_ps(y_prod, y_bias);
+            _mm256_storeu_ps (x_coords_lineptr + j, x_coord);
+            _mm256_storeu_ps (y_coords_lineptr + j, y_coord);
             cols=_mm256_add_epi32(cols, deltas);
         }
-        for(int j=target_width_r4;j<target_width;j++)
+        for(int j=target_width_r8;j<target_width;j++)
         {
             float src_x = t11 * j + src_x0;
             float src_y = t21 * j + src_y0;
-            coords[(i*target_width + j) * 2 + 0] = src_x;
-            coords[(i*target_width + j) * 2 + 1] = src_y;
+            x_coords[i*target_width + j] = src_x;
+            y_coords[i*target_width + j] = src_y;
         }
     }
 
-    auto result = this->_interpBilinear_Avx2(coords, target_width, target_height);
+    auto result = this->_interpBilinear_Cuda(x_coords, y_coords, target_width, target_height);
 
-    delete[] coords;
+    delete[] x_coords;
+    delete[] y_coords;
     return result;
 }
 
