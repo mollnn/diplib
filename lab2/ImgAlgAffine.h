@@ -10,7 +10,9 @@
 #include <xmmintrin.h>
 #include <avx2intrin.h>
 
+#ifdef IMG_ENABLE_CUDA
 #include "ImgAlg_Cuda.h"
+#endif
 
 template <typename T>
 class ImgAlgAffine : public virtual ImgAlgInterp<T>
@@ -22,36 +24,22 @@ protected:
     ImgData<T> _transformAffine(const mat3 &transform_matrix, int target_width, int target_height);
     ImgData<T> _transformAffine_Baseline(const mat3 &transform_matrix, int target_width, int target_height);
     ImgData<T> _transformAffine_Fast(const mat3 &transform_matrix, int target_width, int target_height);
+#ifdef IMG_ENABLE_AVX2
     ImgData<T> _transformAffine_Avx2_sep(const mat3 &transform_matrix, int target_width, int target_height);
     ImgData<T> _transformAffine_Avx2(const mat3 &transform_matrix, int target_width, int target_height);
 //    Fixed point version can be faster. Too tired to implement it :(
 //    ImgData<T> _transformAffine_Avx2_fixpt(const mat3 &transform_matrix, int target_width, int target_height);
+#endif
+
+#ifdef IMG_ENABLE_CUDA
     ImgData<T> _transformAffine_Cuda(const mat3 &transform_matrix, int target_width, int target_height);
 private:
     void _transformAffine_Cuda_C(T *dest_ptr, T *src_ptr, float *mat, int dest_width, int dest_height, int src_width, int src_height, T default_value);
+#endif
+private:
 };
 
 
-//////////////////////////////////////////////
-/// BENCHMARK PERFORMANCE
-/// Average time usage (ms) Per 1 Mega Pixels (src=dest)
-///   Release Profile
-///   Intel(R) Core i5-11300H @ 3.10GHz (4 cores 320KB/5MB/8MB)
-///   Mem 3200MHz
-///   NVIDIA GeForce MX450 (14x64 SMs, 2GB Mem, 80GBps, ~2TFlops) @CUDA 11.0
-//    Affine Serial             35.31
-//    Affine OpenMP             8.36
-//    + matmul expansion        6.16
-//    + interp avx2             5.45
-//    + matmul avx2             5.16
-//    - divide 8px inline       5.31
-//    + coords div              4.84
-//    + no mid coords           3.10
-//    + avx2 -> avx512          ...
-//    + all fixedpoint          ...
-//    Affine CUDA(no t-mem)     2.49
-/// Tester: img = img.crop(0, 0, img.width(), img.height(), 1, 1.5);
-//////////////////////////////////////////////
 
 template <typename T>
 ImgData<T> ImgAlgAffine<T>::_transformAffine_Baseline(const mat3 &transform_matrix, int target_width, int target_height)
@@ -101,6 +89,7 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Fast(const mat3 &transform_matrix, 
     return result;
 }
 
+#ifdef IMG_ENABLE_AVX2
 template <typename T>
 ImgData<T> ImgAlgAffine<T>::_transformAffine_Avx2_sep(const mat3 &transform_matrix, int target_width, int target_height)
 {
@@ -261,13 +250,22 @@ ImgData<T> ImgAlgAffine<T>::_transformAffine_Avx2(const mat3 &transform_matrix, 
     delete[] target_image_ps;
     return result;
 }
+#endif
 
 template <typename T>
 ImgData<T> ImgAlgAffine<T>::_transformAffine(const mat3 &transform_matrix, int target_width, int target_height)
 {
+    #ifdef IMG_ENABLE_CUDA
+
     return _transformAffine_Cuda(transform_matrix, target_width, target_height);
+#elif defined IMG_ENABLE_AVX2
+    return _transformAffine_Avx2(transform_matrix, target_width, target_height);
+#else
+    return _transformAffine_Baseline(transform_matrix, target_width, target_height);
+#endif
 }
 
+#ifdef IMG_ENABLE_CUDA
 template <typename T>
 ImgData<T> ImgAlgAffine<T>::_transformAffine_Cuda(const mat3 &transform_matrix, int target_width, int target_height)
 {
@@ -306,5 +304,7 @@ void ImgAlgAffine<T>::_transformAffine_Cuda_C(T *dest_ptr, T *src_ptr, float *ma
         throw("Unsupported data type.");
     }
 }
+#endif
+
 
 #endif // IMGALGAFFINE_H

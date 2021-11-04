@@ -1,5 +1,5 @@
 #include "Tester.h"
-#include "img.h"
+#include "Img.h"
 
 #include <QDebug>
 
@@ -43,16 +43,24 @@ void Test1::test_case3()
 }
 
 
+//    Average time usage (ms) Per 1 Mega Pixels
+//    Release Profile
+//    Intel(R) Core i5-11300H @ 3.10GHz (4 cores 320KB/5MB/8MB)
+//    Mem 3200MHz
+//    NVIDIA GeForce MX450 (14 SM × 64 SP/SM, 80GBps, 2.2 TFlops)
 
+//    Crop(Copy) Serial		0.94
+//    Crop(Copy) OMP		0.61
 
-//void Test1::test_case4()
-//{
-//    Img<uint16_t> img(1000, 1000, 4095);
-//    for(int i=0;i<1000;i++) for(int j=0;j<1000;j++) img.setPixel(j,i,rand()%4096);
-//    auto img1 = img.crop(0, 0, img.width(), img.height(), 1, 1.5);
-//    auto img2 = img.crop_base(0, 0, img.width(), img.height(), 1, 1.5);
-//    double mse = 0;
-//    for(int i=0;i<1000;i++) for(int j=0;j<1000;j++) mse+=pow(img1.pixel(j,i)-img2.pixel(j,i),2);
-//    mse /= 1e6;
-//    qDebug()<<"MSE ="<<mse;
-//}
+//    GrayW Serial          4.47
+//    GrayW OMP             1.15
+//    GrayW OMP+LUT         0.93
+
+//    Affine Serial         24.68
+//    Affine OpenMP         6.25
+//    + matmul expansion	4.87
+//    Affine AVX2           3.10
+//    + avx2 -> avx512		...
+//    + float->int          ...
+//    Affine CUDA (no texm)	2.49
+

@@ -8,7 +8,9 @@
 #include <xmmintrin.h>
 #include <avx2intrin.h>
 
+#ifdef IMG_ENABLE_CUDA
 #include "ImgAlg_Cuda.h"
+#endif
 
 template <typename T>
 class ImgAlgInterp : public virtual ImgData<T>
@@ -18,21 +20,24 @@ public:
 protected:
     T _pxInterpBilinear(float x, float y);
 
+    #ifdef IMG_ENABLE_AVX2
     static inline __m256 __8pxInterpBilinear_Avx2_ps(float* source_image_ps, __m256 xi, __m256 yi, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value);
-
+#endif
     ImgData<T> _interpBilinear(float* x_coords, float* y_coords,  int target_width, int target_height);
     ImgData<T> _interpBilinear_Baseline(float* x_coords, float* y_coords,  int target_width, int target_height);
+    #ifdef IMG_ENABLE_AVX2
     ImgData<T> _interpBilinear_Avx2(float* x_coords, float* y_coords, int target_width, int target_height);
+#endif
+    #ifdef IMG_ENABLE_CUDA
     ImgData<T> _interpBilinear_Cuda(float* x_coords, float* y_coords,  int target_width, int target_height);
+#endif
 private:
+    #ifdef IMG_ENABLE_CUDA
     void _interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float* x_coords, float* y_coords,  int dest_width, int dest_height, int src_width, int src_height, T default_value);
+#endif
 };
 
 
-//////////////////////////////////////////////
-///
-/// See ImgAlgAffine.h for BENCHMARK PERFORMANCE
-///
 
 template <typename T>
 T ImgAlgInterp<T>::_pxInterpBilinear(float x, float y)
@@ -49,7 +54,13 @@ T ImgAlgInterp<T>::_pxInterpBilinear(float x, float y)
 template <typename T>
 ImgData<T> ImgAlgInterp<T>::_interpBilinear(float* x_coords, float* y_coords, int target_width, int target_height)
 {
-    return _interpBilinear_Cuda(x_coords, y_coords, target_width, target_height);
+#ifdef IMG_ENABLE_CUDA
+            return _interpBilinear_Cuda(x_coords, y_coords, target_width, target_height);
+        #elif defined IMG_ENABLE_AVX2
+            return _interpBilinear_Avx2(x_coords, y_coords, target_width, target_height);
+        #else
+            return _interpBilinear_Baseline(x_coords, y_coords, target_width, target_height);
+        #endif
 }
 
 
@@ -69,7 +80,7 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Baseline(float* x_coords, float* y_c
     return result;
 }
 
-
+#ifdef IMG_ENABLE_AVX2
 template <typename T>
 inline __m256 ImgAlgInterp<T>::__8pxInterpBilinear_Avx2_ps(float* source_image_ps, __m256 xi, __m256 yi, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value)
 {
@@ -216,7 +227,9 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* x_coords, float* y_coord
     delete[] target_image_ps;
     return result;
 }
+#endif
 
+#ifdef IMG_ENABLE_CUDA
 
 template <typename T>
 ImgData<T> ImgAlgInterp<T>::_interpBilinear_Cuda(float* x_coords, float* y_coords, int target_width, int target_height)
@@ -252,5 +265,6 @@ void ImgAlgInterp<T>::_interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float* x_c
         throw("Unsupported data type.");
     }
 }
+#endif
 
 #endif // IMGALGINTERPOLATE_H

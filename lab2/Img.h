@@ -11,6 +11,7 @@
 ///////////////////////////////////////////////
 ///////// 【核心算法层】 基于数据结构，实现核心算法。允许层内调用
 /// ImgAlg...               核心算法实现，允许 C 风格传参
+/// SIMD 加速在类内完成，SIMT(CUDA) 加速单独编译成动态库
 ///////////////////////////////////////////////
 ///////// 【功能逻辑层】 利用核心算法，完成业务需求。禁止层内调用
 /// ImgFunc...              功能逻辑，接口参数必须以对象形式传递
@@ -19,12 +20,20 @@
 ///////// 【交互封装层】 仅封装
 /// Img                     “集大成者”
 /// AffineTransform, ...    接口参数包装结构，提供少量运算方法
-/// QImagePlot              QImage 显示辅助类
-/// QImagePlotBox           QImage 高级显示辅助类
+/// QImagePlot              QImage 显示
+/// QImagePlotBox           QImage 高级显示
 ///////////////////////////////////////////////
 /// 命名规则示例：Class.fPub(), Class._fPro(), Clas.__fStaticPro
 ///       Class._fPriv_Spec(), Class.mem_var, fGlobal(), local_var
 ///////////////////////////////////////////////
+
+// 加速控制标志
+#ifndef IMG_ENABLE_CUDA
+//#define IMG_ENABLE_CUDA     // 注释该行以禁用 CUDA
+#endif
+#ifndef IMG_ENABLE_AVX2
+#define IMG_ENABLE_AVX2     // 注释该行以禁用 AVX2
+#endif
 
 #include "ImgConvert.h"
 #include "ImgFuncTransform.h"

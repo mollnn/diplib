@@ -34,19 +34,6 @@ protected:
 };
 
 
-//////////////////////////////////////////////
-/// BENCHMARK PERFORMANCE
-/// Average time usage (ms) Per 1 Mega Pixels (src=dest)
-///   Release Profile
-///   Intel(R) Core i5-11300H @ 3.10GHz (4 cores 320KB/5MB/8MB)
-///   Mem 3200MHz
-///   NVIDIA GeForce MX450 (14x64 SMs, 2GB Mem, 80GBps, ~2TFlops) @CUDA 11.0
-//    GrayWnd Serial        4.47
-//    GrayWnd OMP           1.15
-//    GrayWnd OMP+LUT       0.93
-/// Tester: auto img_out = img.applyGrayWindow<uint8_t>(234, 345);
-//////////////////////////////////////////////
-
 template <typename T>
 template <typename R>
 R ImgAlgLinearMap<T>::__pxLinearMapSimple(T pixel, R target_range, T source_range)

@@ -111,6 +111,11 @@ void ImgConvert<T>::fromRaw(const QString& filename)
     this->_allocate();
 
     in.readRawData(reinterpret_cast<char*>(this->data_), width*height*2);
+
+    for(int i=0;i<width*height;i++)
+    {
+        this->data_[i]&=0x0fff;
+    }
 }
 
 #endif // IMGCONVERT_H

@@ -75,8 +75,8 @@ void __ImgAlgInterp_interpBilinear_cuda_(T *dest_ptr, T *src_ptr, float *x_coord
     cudaMemcpy(x_coords_d, x_coords, dest_size * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(y_coords_d, y_coords, dest_size * sizeof(float), cudaMemcpyHostToDevice);
 
-    int block_width = 8;
-    int block_height = 8;
+    int block_width = 16;
+    int block_height = 16;
 
     int grid_width = (dest_width + block_width - 1) / block_width;
     int grid_height = (dest_height + block_height - 1) / block_height;
@@ -132,8 +132,8 @@ void __ImgAlgAffine_affineTransform_cuda_(T *dest_ptr, T *src_ptr, float *mat, i
     cudaMemcpy(src_ptr_d, src_ptr, src_size * sizeof(T), cudaMemcpyHostToDevice);
     cudaMemcpy(mat_d, mat, 9 * sizeof(float), cudaMemcpyHostToDevice);
 
-    int block_width = 8;
-    int block_height = 8;
+    int block_width = 16;
+    int block_height = 16;
 
     int grid_width = (dest_width + block_width - 1) / block_width;
     int grid_height = (dest_height + block_height - 1) / block_height;

@@ -96,8 +96,8 @@ void Widget::_render()
     int src_width = img_in_.width();
     int src_height = img_in_.height();
 
-    // 为了测试处理流程的整体性能，这里每次重新计算灰度映射和插值变换
     // 就应用而言，灰度窗参数变化较少，可以缓存 img_tmp
+    // 这里为了测试处理流程的整体性能，每次重新计算灰度映射和插值变换
     Img<uint8_t> img_tmp = img_in_.applyGrayWindow<uint8_t>(gray_window_breadth_, gray_window_position_);
     img_out_=img_tmp.crop((-view_width+src_width)/2+view_offset_x_,
                           (-view_height+src_height)/2+view_offset_y_,

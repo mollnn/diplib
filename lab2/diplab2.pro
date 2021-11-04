@@ -4,16 +4,22 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
-QMAKE_CXXFLAGS += -fopenmp -mavx -mavx2 -mfma -msse -msse2 -msse3
+# TO ENABLE OPENMP, CONFIG HERE
+QMAKE_CXXFLAGS += -fopenmp
 QMAKE_LIBDIR += .
-LIBS += -fopenmp \
-     -L. -lImgAlg_Cuda -lcudart\
-     -L"C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.0/lib/x64/" \
+LIBS += -fopenmp
 
-INCLUDEPATH += "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.0/include"
-CUDA_DIR = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0"
-INCLUDEPATH += $$CUDA_DIR/include
-QMAKE_LIBDIR += $$CUDA_DIR/lib/x64/
+# TO ENABLE AVX2.., CONFIG HERE
+QMAKE_CXXFLAGS += -mavx -mavx2 -mfma -msse -msse2 -msse3
+
+# TO ENABLE CUDA, CONFIG HERE
+#LIBS +=     -L. -lImgAlg_Cuda -lcudart\
+#     -L"C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.0/lib/x64/"
+#INCLUDEPATH += "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.0/include"
+#CUDA_DIR = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0"
+#INCLUDEPATH += $$CUDA_DIR/include
+#QMAKE_LIBDIR += $$CUDA_DIR/lib/x64/
+#QMAKE_LIBDIR += .
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
