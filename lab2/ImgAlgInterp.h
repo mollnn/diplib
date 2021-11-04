@@ -26,6 +26,9 @@ public:
     ImgAlgInterp() {}
 protected:
     T _pxInterpBilinear(float x, float y);
+
+    inline static __m256 __8pxInterpBilinear_Avx2_ps(float* source_image_ps, __m256 xi, __m256 yi, int target_width, int target_height, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value);
+
     ImgData<T> _interpBilinear(float* coords, int target_width, int target_height);
     ImgData<T> _interpBilinear_Baseline(float* coords, int target_width, int target_height);
     ImgData<T> _interpBilinear_Avx2(float* coords, int target_width, int target_height);
@@ -71,6 +74,86 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Baseline(float* coords, int target_w
     return result;
 }
 
+
+template <typename T>
+inline __m256 ImgAlgInterp<T>::__8pxInterpBilinear_Avx2_ps(float* source_image_ps, __m256 xi, __m256 yi, int target_width, int target_height, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value)
+{
+
+    static __m256i bound_x_min = _mm256_setzero_si256();
+    static __m256i bound_y_min = _mm256_setzero_si256();
+    static __m256 const1s = _mm256_set1_ps(1);
+
+    __m256 x0 = _mm256_round_ps(xi, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
+    __m256 y0 = _mm256_round_ps(yi, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
+    __m256 x1 = _mm256_add_ps(x0, const1s);
+    __m256 y1 = _mm256_add_ps(y0, const1s);
+
+    __m256i x0_i32 = _mm256_cvtps_epi32(x0);
+    __m256i y0_i32 = _mm256_cvtps_epi32(y0);
+    __m256i x1_i32 = _mm256_cvtps_epi32(x1);
+    __m256i y1_i32 = _mm256_cvtps_epi32(y1);
+
+    __m256i y0_start = _mm256_mullo_epi32(widths, y0_i32);
+    __m256i y1_start = _mm256_mullo_epi32(widths, y1_i32);
+
+    __m256i src_idx00 = _mm256_add_epi32(y0_start, x0_i32);
+    __m256i src_idx01 = _mm256_add_epi32(y1_start, x0_i32);
+    __m256i src_idx10 = _mm256_add_epi32(y0_start, x1_i32);
+    __m256i src_idx11 = _mm256_add_epi32(y1_start, x1_i32);
+
+    __m256i boundcheck_x0_min = _mm256_cmpgt_epi32(bound_x_min, x0_i32);
+    __m256i boundcheck_x0_max = _mm256_cmpgt_epi32(x0_i32, bound_x_max);
+    __m256i boundcheck_x1_min = _mm256_cmpgt_epi32(bound_x_min, x1_i32);
+    __m256i boundcheck_x1_max = _mm256_cmpgt_epi32(x1_i32, bound_x_max);
+    __m256i boundcheck_y0_min = _mm256_cmpgt_epi32(bound_y_min, y0_i32);
+    __m256i boundcheck_y0_max = _mm256_cmpgt_epi32(y0_i32, bound_y_max);
+    __m256i boundcheck_y1_min = _mm256_cmpgt_epi32(bound_y_min, y1_i32);
+    __m256i boundcheck_y1_max = _mm256_cmpgt_epi32(y1_i32, bound_y_max);
+
+    __m256i boundcheck_x0 = _mm256_or_si256(boundcheck_x0_min, boundcheck_x0_max);
+    __m256i boundcheck_x1 = _mm256_or_si256(boundcheck_x1_min, boundcheck_x1_max);
+    __m256i boundcheck_y0 = _mm256_or_si256(boundcheck_y0_min, boundcheck_y0_max);
+    __m256i boundcheck_y1 = _mm256_or_si256(boundcheck_y1_min, boundcheck_y1_max);
+
+    __m256i boundcheck00 = _mm256_or_si256(boundcheck_x0, boundcheck_y0);
+    __m256i boundcheck01 = _mm256_or_si256(boundcheck_x0, boundcheck_y1);
+    __m256i boundcheck10 = _mm256_or_si256(boundcheck_x1, boundcheck_y0);
+    __m256i boundcheck11 = _mm256_or_si256(boundcheck_x1, boundcheck_y1);
+
+    __m256i idx00 = _mm256_blendv_epi8(src_idx00, idx_default_value, boundcheck00);
+    __m256i idx01 = _mm256_blendv_epi8(src_idx01, idx_default_value, boundcheck01);
+    __m256i idx10 = _mm256_blendv_epi8(src_idx10, idx_default_value, boundcheck10);
+    __m256i idx11 = _mm256_blendv_epi8(src_idx11, idx_default_value, boundcheck11);
+
+    __m256 val00 = _mm256_i32gather_ps(source_image_ps, idx00, 4);
+    __m256 val01 = _mm256_i32gather_ps(source_image_ps, idx01, 4);
+    __m256 val10 = _mm256_i32gather_ps(source_image_ps, idx10, 4);
+    __m256 val11 = _mm256_i32gather_ps(source_image_ps, idx11, 4);
+
+    __m256 dx0 = _mm256_sub_ps(xi, x0);
+    __m256 dy0 = _mm256_sub_ps(yi, y0);
+    __m256 dx1 = _mm256_sub_ps(x1, xi);
+    __m256 dy1 = _mm256_sub_ps(y1, yi);
+
+    __m256 coef00 = _mm256_mul_ps(dx1, dy1);
+    __m256 coef01 = _mm256_mul_ps(dx1, dy0);
+    __m256 coef10 = _mm256_mul_ps(dx0, dy1);
+    __m256 coef11 = _mm256_mul_ps(dx0, dy0);
+
+    __m256 ans00 = _mm256_mul_ps(coef00, val00);
+    __m256 ans01 = _mm256_mul_ps(coef01, val01);
+    __m256 ans10 = _mm256_mul_ps(coef10, val10);
+    __m256 ans11 = _mm256_mul_ps(coef11, val11);
+
+    __m256 ans0 = _mm256_add_ps(ans00, ans01);
+    __m256 ans1 = _mm256_add_ps(ans10, ans11);
+
+    __m256 ans = _mm256_add_ps(ans0, ans1);
+
+    return ans;
+}
+
+
 template <typename T>
 ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width, int target_height)
 {
@@ -102,18 +185,17 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width
     }
     source_image_ps[source_img_size] = 0; // 默认值可自定义
 
-
-    __m256i coords_index_offsets_x = _mm256_set_epi32(14, 12, 10, 8, 6, 4, 2, 0);
-    __m256i coords_index_offsets_y = _mm256_set_epi32(15, 13, 11, 9, 7, 5, 3, 1);
-
-    __m256i bound_x_min = _mm256_setzero_si256();
     __m256i bound_x_max = _mm256_set1_epi32(this->width_ - 1);
-    __m256i bound_y_min = _mm256_setzero_si256();
     __m256i bound_y_max = _mm256_set1_epi32(this->height_ - 1);
 
     __m256i idx_default_value = _mm256_set1_epi32(source_img_size);
 
     int width = this->width_;
+
+    static __m256i coords_index_offsets_x = _mm256_set_epi32(14, 12, 10, 8, 6, 4, 2, 0);
+    static __m256i coords_index_offsets_y = _mm256_set_epi32(15, 13, 11, 9, 7, 5, 3, 1);
+
+    __m256i widths = _mm256_set1_epi32(width);
 
 #pragma omp parallel for
     for(int i=0;i<target_img_size_r8;i+=8)
@@ -124,74 +206,7 @@ ImgData<T> ImgAlgInterp<T>::_interpBilinear_Avx2(float* coords, int target_width
         __m256 xi = _mm256_i32gather_ps(coords, coords_index_x, 4);
         __m256 yi = _mm256_i32gather_ps(coords, coords_index_y, 4);
 
-        __m256 const1s = _mm256_set1_ps(1);
-        __m256 x0 = _mm256_round_ps(xi, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
-        __m256 y0 = _mm256_round_ps(yi, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
-        __m256 x1 = _mm256_add_ps(x0, const1s);
-        __m256 y1 = _mm256_add_ps(y0, const1s);
-
-        __m256i x0_i32 = _mm256_cvtps_epi32(x0);
-        __m256i y0_i32 = _mm256_cvtps_epi32(y0);
-        __m256i x1_i32 = _mm256_cvtps_epi32(x1);
-        __m256i y1_i32 = _mm256_cvtps_epi32(y1);
-
-        __m256i widths = _mm256_set1_epi32(width);
-        __m256i y0_start = _mm256_mullo_epi32(widths, y0_i32);
-        __m256i y1_start = _mm256_mullo_epi32(widths, y1_i32);
-
-        __m256i src_idx00 = _mm256_add_epi32(y0_start, x0_i32);
-        __m256i src_idx01 = _mm256_add_epi32(y1_start, x0_i32);
-        __m256i src_idx10 = _mm256_add_epi32(y0_start, x1_i32);
-        __m256i src_idx11 = _mm256_add_epi32(y1_start, x1_i32);
-
-        __m256i boundcheck_x0_min = _mm256_cmpgt_epi32(bound_x_min, x0_i32);
-        __m256i boundcheck_x0_max = _mm256_cmpgt_epi32(x0_i32, bound_x_max);
-        __m256i boundcheck_x1_min = _mm256_cmpgt_epi32(bound_x_min, x1_i32);
-        __m256i boundcheck_x1_max = _mm256_cmpgt_epi32(x1_i32, bound_x_max);
-        __m256i boundcheck_y0_min = _mm256_cmpgt_epi32(bound_y_min, y0_i32);
-        __m256i boundcheck_y0_max = _mm256_cmpgt_epi32(y0_i32, bound_y_max);
-        __m256i boundcheck_y1_min = _mm256_cmpgt_epi32(bound_y_min, y1_i32);
-        __m256i boundcheck_y1_max = _mm256_cmpgt_epi32(y1_i32, bound_y_max);
-
-        __m256i boundcheck_x0 = _mm256_or_si256(boundcheck_x0_min, boundcheck_x0_max);
-        __m256i boundcheck_x1 = _mm256_or_si256(boundcheck_x1_min, boundcheck_x1_max);
-        __m256i boundcheck_y0 = _mm256_or_si256(boundcheck_y0_min, boundcheck_y0_max);
-        __m256i boundcheck_y1 = _mm256_or_si256(boundcheck_y1_min, boundcheck_y1_max);
-
-        __m256i boundcheck00 = _mm256_or_si256(boundcheck_x0, boundcheck_y0);
-        __m256i boundcheck01 = _mm256_or_si256(boundcheck_x0, boundcheck_y1);
-        __m256i boundcheck10 = _mm256_or_si256(boundcheck_x1, boundcheck_y0);
-        __m256i boundcheck11 = _mm256_or_si256(boundcheck_x1, boundcheck_y1);
-
-        __m256i idx00 = _mm256_blendv_epi8(src_idx00, idx_default_value, boundcheck00);
-        __m256i idx01 = _mm256_blendv_epi8(src_idx01, idx_default_value, boundcheck01);
-        __m256i idx10 = _mm256_blendv_epi8(src_idx10, idx_default_value, boundcheck10);
-        __m256i idx11 = _mm256_blendv_epi8(src_idx11, idx_default_value, boundcheck11);
-
-        __m256 val00 = _mm256_i32gather_ps(source_image_ps, idx00, 4);
-        __m256 val01 = _mm256_i32gather_ps(source_image_ps, idx01, 4);
-        __m256 val10 = _mm256_i32gather_ps(source_image_ps, idx10, 4);
-        __m256 val11 = _mm256_i32gather_ps(source_image_ps, idx11, 4);
-
-        __m256 dx0 = _mm256_sub_ps(xi, x0);
-        __m256 dy0 = _mm256_sub_ps(yi, y0);
-        __m256 dx1 = _mm256_sub_ps(x1, xi);
-        __m256 dy1 = _mm256_sub_ps(y1, yi);
-
-        __m256 coef00 = _mm256_mul_ps(dx1, dy1);
-        __m256 coef01 = _mm256_mul_ps(dx1, dy0);
-        __m256 coef10 = _mm256_mul_ps(dx0, dy1);
-        __m256 coef11 = _mm256_mul_ps(dx0, dy0);
-
-        __m256 ans00 = _mm256_mul_ps(coef00, val00);
-        __m256 ans01 = _mm256_mul_ps(coef01, val01);
-        __m256 ans10 = _mm256_mul_ps(coef10, val10);
-        __m256 ans11 = _mm256_mul_ps(coef11, val11);
-
-        __m256 ans0 = _mm256_add_ps(ans00, ans01);
-        __m256 ans1 = _mm256_add_ps(ans10, ans11);
-
-        __m256 ans = _mm256_add_ps(ans0, ans1);
+        __m256 ans = __8pxInterpBilinear_Avx2_ps(source_image_ps, xi, yi, target_width, target_height, widths, bound_x_max, bound_y_max, idx_default_value);
 
         _mm256_storeu_ps(target_image_ps + i, ans);
     }

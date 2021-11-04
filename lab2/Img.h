@@ -22,8 +22,8 @@
 /// QImagePlot              QImage 显示辅助类
 /// QImagePlotBox           QImage 高级显示辅助类
 ///////////////////////////////////////////////
-/// 命名规则示例：Class.fPub(), Class._fPriv(), local_var
-///       Class._fPriv_Spec(), Class.mem_var, fGlobal()
+/// 命名规则示例：Class.fPub(), Class._fPro(), Clas.__fStaticPro
+///       Class._fPriv_Spec(), Class.mem_var, fGlobal(), local_var
 ///////////////////////////////////////////////
 
 #include "ImgConvert.h"
