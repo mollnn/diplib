@@ -44,7 +44,7 @@ template <typename T>
 template <typename R>
 R ImgAlgLinearMap<T>::__pxLinearMapRange(T pixel, R target_min, R target_max, T source_min, T source_max)
 {
-    int delta = 1 * pixel - source_min;
+    int64_t delta = 1 * pixel - source_min;
     if (delta > source_max - source_min)
         delta = source_max - source_min;
     if (delta < 0)
