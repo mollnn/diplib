@@ -68,6 +68,12 @@ public:
     {
         return this->_conv2d(kernel);
     }
+
+    ImgData<T> _filter(ImgData<float> kernel_x, ImgData<float> kernel_y)
+    {
+        ImgAlgConv<T> tmp = this->_conv2d(kernel_x);
+        return tmp._conv2d(kernel_y);
+    }
 protected:
 
 };

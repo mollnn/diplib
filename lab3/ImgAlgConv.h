@@ -8,6 +8,8 @@ class ImgAlgConv : public virtual ImgData<T>
 {
 public:
     ImgAlgConv() {}
+    ImgAlgConv(const ImgData<T> &img) : ImgData<T>(img) {}
+    ImgAlgConv(ImgData<T> &&img) : ImgData<T>(img) {}
 
     ImgData<T> _conv2d(ImgData<float> kernel)
     {
