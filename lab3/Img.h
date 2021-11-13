@@ -26,6 +26,11 @@
 /// 命名规则示例：Class.fPub(), Class._fPro(), Clas.__fStaticPro
 ///       Class._fPriv_Spec(), Class.mem_var, fGlobal(), local_var
 ///////////////////////////////////////////////
+/// 实现版本命名示例：
+/// Baseline(定义的，直觉的，确保正确的版本)
+/// Fast(使用预处理或等效方法进行串行优化后的版本)
+/// Avx2/Cuda(使用数据并行方法优化后的版本)
+///////////////////////////////////////////////
 
 // 加速控制标志
 #ifndef IMG_ENABLE_CUDA
