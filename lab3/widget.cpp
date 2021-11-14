@@ -127,6 +127,7 @@ void Widget::_render()
 
     ImgData<float> kernel = Img<float>::__getLaplacianKernel2D(3);
 
+
     // 就应用而言，灰度窗参数变化较少，可以缓存 img_tmp
     // 这里为了测试处理流程的整体性能，每次重新计算灰度映射和插值变换
     Img<uint8_t> img_tmp = Img<uint16_t>(Img<uint16_t>(img_in_.gaussianBlur(0.01 * smooth_sigma_))._unsharpMasking(kernel, -0.1 * usm_intensity_, usm_threshold_)).applyGrayWindow<uint8_t>(gray_window_breadth_, gray_window_position_);

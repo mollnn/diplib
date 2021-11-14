@@ -60,6 +60,7 @@ ImgData<R> ImgAlgLinearMap<T>::_linearMapSimple(R target_range, T source_range)
 {
     R type_max = (1ull << (8 * sizeof(R))) - 1;
     ImgData<R> result(this->width_, this->height_, type_max);
+
 #pragma omp parallel for
     for (int i = 0; i < this->height_; i++)
     {

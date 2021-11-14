@@ -4,6 +4,11 @@
 #include "ImgData.h"
 #include "ImgAlgCopy.h"
 
+
+#include <immintrin.h>
+#include <xmmintrin.h>
+#include <avx2intrin.h>
+
 template <typename T>
 class ImgAlgConv : public virtual ImgAlgCopy<T>
 {
@@ -21,23 +26,23 @@ public:
     {
         ImgData<T> result(this->width_, this->height_, this->range_);
 
-        int kernel_width_half = (kernel.width()-1)/2;
-        int kernel_height_half = (kernel.height()-1)/2;
+        int kernel_width_half = (kernel.width() - 1) / 2;
+        int kernel_height_half = (kernel.height() - 1) / 2;
 
 #pragma omp parallel for
-        for(int i=0;i<result.height();i++)
+        for (int i = 0; i < result.height(); i++)
         {
-            for(int j=0;j<result.width();j++)
+            for (int j = 0; j < result.width(); j++)
             {
                 float sum = 0;
-                for(int u=0;u<kernel.height();u++)
+                for (int u = 0; u < kernel.height(); u++)
                 {
-                    for(int v=0;v<kernel.width();v++)
+                    for (int v = 0; v < kernel.width(); v++)
                     {
-                        sum += this->_pixel(j+kernel_width_half-v, i+kernel_height_half-u) * kernel.pixel(v, u);
+                        sum += this->_pixel(j + kernel_width_half - v, i + kernel_height_half - u) * kernel.pixel(v, u);
                     }
                 }
-                result.setPixel(j,i,sum);
+                result.setPixel(j, i, sum);
             }
         }
 
@@ -46,13 +51,22 @@ public:
 
     ImgData<T> _conv2d_Fast(ImgData<float> kernel)
     {
+        // 先生成 padding 后的图像，以避免循环内层出现分支
+
+        // if(kernel.width() == 1 && kernel.height() > 19)
+        // {
+        //     // 转置后卷积
+        //     ImgAlgConv<T> image_src = this->_transpose();
+        //     return image_src._conv2d_Fast(kernel._transpose())._transpose();
+        // }
+
         ImgData<T> result(this->width_, this->height_, this->range_);
 
-        int kernel_width_half = (kernel.width()-1)/2;
-        int kernel_height_half = (kernel.height()-1)/2;
+        int kernel_width_half = (kernel.width() - 1) / 2;
+        int kernel_height_half = (kernel.height() - 1) / 2;
 
-        int image_padding_width = this->width() + 2*kernel_width_half;
-        int image_padding_height = this->height() + 2*kernel_height_half;
+        int image_padding_width = this->width() + 2 * kernel_width_half;
+        int image_padding_height = this->height() + 2 * kernel_height_half;
 
         int kernel_width = kernel.width();
         int kernel_height = kernel.height();
@@ -60,26 +74,25 @@ public:
         int result_width = result.width();
         int result_height = result.height();
 
-        // 先生成 padding 后的图像，以避免循环内层出现判断
         ImgData<T> image_padding = this->_copySubImg(-kernel_width_half, -kernel_height_half, image_padding_width, image_padding_height);
 
-        T* image_padding_ptr = image_padding.bits();
-        T* image_result_ptr = result.bits();
-        float* kernel_ptr = kernel.bits();
+        T *image_padding_ptr = image_padding.bits();
+        T *image_result_ptr = result.bits();
+        float *kernel_ptr = kernel.bits();
 
 #pragma omp parallel for
-        for(int i=0;i<result_height;i++)
+        for (int i = 0; i < result_height; i++)
         {
-            for(int j=0;j<result_width;j++)
+            for (int j = 0; j < result_width; j++)
             {
-                T* image_result_px_ptr = image_result_ptr + i * result_width + j;
+                T *image_result_px_ptr = image_result_ptr + i * result_width + j;
                 float sum = 0;
-                for(int u=0;u<kernel_height;u++)
+                for (int u = 0; u < kernel_height; u++)
                 {
-                    for(int v=0;v<kernel_width;v++)
+                    for (int v = 0; v < kernel_width; v++)
                     {
-                        T* image_padding_px_ptr = image_padding_ptr + (i + kernel_height - u - 1) * image_padding_width + j + kernel_width - v - 1;
-                        float* kernel_px_ptr = kernel_ptr + u * kernel_width + v;
+                        T *image_padding_px_ptr = image_padding_ptr + (i + kernel_height - u - 1) * image_padding_width + j + kernel_width - v - 1;
+                        float *kernel_px_ptr = kernel_ptr + u * kernel_width + v;
                         sum += (*kernel_px_ptr) * (*image_padding_px_ptr);
                     }
                 }
@@ -89,8 +102,103 @@ public:
 
         return result;
     }
-protected:
 
+    ImgData<T> _conv2d_Avx2(ImgData<float> kernel)
+    {
+        // 卷积核翻转
+        kernel = kernel._mirrorXY();
+
+        ImgData<T> result(this->width_, this->height_, this->range_);
+
+        int kernel_width_half = (kernel.width() - 1) / 2;
+        int kernel_height_half = (kernel.height() - 1) / 2;
+
+        int image_padding_width = this->width() + 2 * kernel_width_half;
+        int image_padding_height = this->height() + 2 * kernel_height_half;
+
+        int kernel_width = kernel.width();
+        int kernel_height = kernel.height();
+
+        int result_width = result.width();
+        int result_width_r8 = result_width / 8 * 8;
+        int result_height = result.height();
+
+        ImgData<T> image_padding = this->_copySubImg(-kernel_width_half, -kernel_height_half, image_padding_width, image_padding_height);
+
+        T *image_padding_ptr = image_padding.bits();
+        T *image_result_ptr = result.bits();
+        float *kernel_ptr = kernel.bits();
+
+        // 图像转换为 32 位浮点
+        float *image_ps = new float[image_padding_width * image_padding_height];
+        for (int i = 0; i < image_padding_width * image_padding_height; i++)
+        {
+            image_ps[i] = image_padding_ptr[i];
+        }
+
+        // 卷积核扩展（每像素重复 8 次）
+        float *kernel_ps = new float[kernel_width * kernel_height * 8];
+        for (int i = 0; i < kernel_width * kernel_height; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                kernel_ps[i * 8 + j] = kernel_ptr[i];
+            }
+        }
+
+#pragma omp parallel for
+        for (int i = 0; i < result_height; i++)
+        {
+            // SIMD
+            for (int j = 0; j < result_width_r8; j += 8)
+            {
+                float sum_ps[8];
+                // 每次计算 8 个连续像素的结果
+                // 卷积仍然通过循环枚举
+                __m256 sum_vec = _mm256_setzero_ps();
+                for (int u = 0; u < kernel_height; u++)
+                {
+                    for (int v = 0; v < kernel_width; v++)
+                    {
+                        __m256 kernel_vec = _mm256_loadu_ps(kernel_ps + (u * kernel_width + v) * 8);
+                        __m256 image_vec = _mm256_loadu_ps(image_ps+ (i + u) * image_padding_width + (j + v));
+                        __m256 sum_vec = _mm256_fmadd_ps(kernel_vec, image_vec, sum_vec);
+                    }
+                }
+                _mm256_storeu_ps(sum_ps, sum_vec);
+                // 转回原类型
+                for (int r = 0; r < 8; r++)
+                {
+                    image_result_ptr[i * result_width + j + r] = sum_ps[r];
+                }
+            }
+
+            // Serial for remaining
+            for (int j = 0; j < result_width; j++)
+            {
+                T *image_result_px_ptr = image_result_ptr + i * result_width + j;
+                float sum = 0;
+                for (int u = 0; u < kernel_height; u++)
+                {
+                    for (int v = 0; v < kernel_width; v++)
+                    {
+                        // 卷积核已经翻转过，这里做的是相关运算
+                        T *image_padding_px_ptr = image_padding_ptr + (i + u) * image_padding_width + j + v;
+                        float *kernel_px_ptr = kernel_ptr + u * kernel_width + v;
+                        sum += (*kernel_px_ptr) * (*image_padding_px_ptr);
+                    }
+                }
+                (*image_result_px_ptr) = sum;
+            }
+        }
+
+        delete[] image_ps;
+        delete[] kernel_ps;
+
+        return result;
+    }
+
+protected:
 };
 
 #endif // IMGALGCONV_H

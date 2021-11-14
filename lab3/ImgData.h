@@ -40,19 +40,19 @@ public:
     // 此函数为平台相关，移植请改写
     void debug();
 
-
-    ImgData<T> _add(const ImgData<T>& rhs)
+    ImgData<T> _add(const ImgData<T> &rhs)
     {
-        assert(this->width()==rhs.width());
-        assert(this->height()==rhs.height());
+        assert(this->width() == rhs.width());
+        assert(this->height() == rhs.height());
 
         ImgData<T> result(this->width(), this->height(), this->range());
 
-        for(int i=0;i<this->height();i++)
+#pragma omp parallel for
+        for (int i = 0; i < this->height(); i++)
         {
-            for(int j=0;j<this->width();j++)
+            for (int j = 0; j < this->width(); j++)
             {
-                result.setPixel(j,i,this->pixel(j,i)+rhs.pixel(j,i));
+                result.setPixel(j, i, this->pixel(j, i) + rhs.pixel(j, i));
             }
         }
 
@@ -63,11 +63,28 @@ public:
     {
         ImgData<T> result(this->width(), this->height(), this->range());
 
-        for(int i=0;i<this->height();i++)
+#pragma omp parallel for
+        for (int i = 0; i < this->height(); i++)
         {
-            for(int j=0;j<this->width();j++)
+            for (int j = 0; j < this->width(); j++)
             {
-                result.setPixel(j,i,this->pixel(j,i)*rhs);
+                result.setPixel(j, i, this->pixel(j, i) * rhs);
+            }
+        }
+
+        return result;
+    }
+
+    ImgData<T> _inverse()
+    {
+        ImgData<T> result(this->width(), this->height(), this->range());
+
+#pragma omp parallel for
+        for (int i = 0; i < this->height(); i++)
+        {
+            for (int j = 0; j < this->width(); j++)
+            {
+                result.setPixel(j, i, this->range() - this->pixel(j, i));
             }
         }
 
@@ -78,18 +95,66 @@ public:
     {
         ImgData<T> result(this->height(), this->width(), this->range());
 
-        for(int i=0;i<this->height();i++)
+#pragma omp parallel for
+        for (int i = 0; i < this->height(); i++)
         {
-            for(int j=0;j<this->width();j++)
+            for (int j = 0; j < this->width(); j++)
             {
-                result.setPixel(i,j,this->pixel(j,i));
+                result.setPixel(i, j, this->pixel(j, i));
             }
         }
 
         return result;
     }
 
-    ImgData<T> _multiply(const ImgData<T>& rhs)
+    ImgData<T> _mirrorX()
+    {
+        ImgData<T> result(this->width(), this->height(), this->range());
+
+#pragma omp parallel for
+        for (int i = 0; i < this->height(); i++)
+        {
+            for (int j = 0; j < this->width(); j++)
+            {
+                result.setPixel(j, i, this->pixel(this->width() - 1 - j, i));
+            }
+        }
+
+        return result;
+    }
+
+    ImgData<T> _mirrorY()
+    {
+        ImgData<T> result(this->width(), this->height(), this->range());
+
+#pragma omp parallel for
+        for (int i = 0; i < this->height(); i++)
+        {
+            for (int j = 0; j < this->width(); j++)
+            {
+                result.setPixel(j, i, this->pixel(j, this->height() - 1 - i));
+            }
+        }
+
+        return result;
+    }
+
+    ImgData<T> _mirrorXY()
+    {
+        ImgData<T> result(this->width(), this->height(), this->range());
+
+#pragma omp parallel for
+        for (int i = 0; i < this->height(); i++)
+        {
+            for (int j = 0; j < this->width(); j++)
+            {
+                result.setPixel(j, i, this->pixel(this->width() - 1 - j, this->height() - 1 - i));
+            }
+        }
+
+        return result;
+    }
+    ImgData<T> _multiply(const ImgData<T> &rhs)
     {
         int n = this->height();
         int m = this->width();
@@ -99,13 +164,14 @@ public:
 
         ImgData<T> result(n, r, this->range());
 
-        for(int i=0;i<n;i++)
+#pragma omp parallel for
+        for (int i = 0; i < n; i++)
         {
-            for(int j=0;j<r;j++)
+            for (int j = 0; j < r; j++)
             {
-                for(int k=0;k<m;k++)
+                for (int k = 0; k < m; k++)
                 {
-                    result.setPixel(j,i,this->pixel(k,i)*rhs.pixel(j,k));
+                    result.setPixel(j, i, this->pixel(k, i) * rhs.pixel(j, k));
                 }
             }
         }
@@ -259,16 +325,15 @@ T *ImgData<T>::bits()
 template <typename T>
 void ImgData<T>::debug()
 {
-    qDebug()<<"ImgData"<<this->width()<<this->height()<<this->range();
-    for(int i=0;i<this->height();i++)
+    qDebug() << "ImgData" << this->width() << this->height() << this->range();
+    for (int i = 0; i < this->height(); i++)
     {
-        for(int j=0;j<this->width();j++)
+        for (int j = 0; j < this->width(); j++)
         {
-            qDebug()<<j<<i<<this->pixel(j,i);
+            qDebug() << j << i << this->pixel(j, i);
         }
     }
-    qDebug()<<"END";
+    qDebug() << "END";
 }
-
 
 #endif // IMGDATA_H

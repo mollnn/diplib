@@ -3,41 +3,6 @@
 
 #include <QDebug>
 
-Test1::Test1()
-{
-}
-
-Test1::~Test1()
-{
-}
-
-void Test1::test_case1()
-{
-    Img<uint16_t> img(10000, 10000, 4095);
-    QBENCHMARK
-    {
-        img = img.crop(0, 0, img.width(), img.height());
-    }
-}
-
-void Test1::test_case2()
-{
-    Img<uint16_t> img(10000, 10000, 4095);
-    QBENCHMARK
-    {
-        auto img_out = img.applyGrayWindow<uint8_t>(234, 345);
-    }
-}
-
-void Test1::test_case3()
-{
-    Img<uint16_t> img(10000, 10000, 4095);
-    QBENCHMARK
-    {
-        img = img.crop(0, 0, img.width(), img.height(), 1, 1.5);
-    }
-}
-
 //    Average time usage (ms) Per 1 Mega Pixels
 //    Release Profile
 //    Intel(R) Core i5-11300H @ 3.10GHz (4 cores 320KB/5MB/8MB)

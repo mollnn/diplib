@@ -54,6 +54,34 @@ public:
         return kernel_y._multiply(kernel_x);
     }
 
+
+    static ImgData<float> __getGaussianHpKernel1Dx(int kernel_size, float sigma)
+    {
+        // 建议 kernel_size > 1 / sigma
+        // sigma 是**频域**高斯函数的标准差
+        assert(kernel_size % 2 == 1);
+
+        ImgData<float> kernel = __getGaussianKernel1Dx(kernel_size, sigma);
+        int center = kernel_size / 2;
+        kernel.setPixel(center, 0, kernel.pixel(center, 0) - 1);
+
+        return kernel._amplify(-1);
+    }
+
+    static ImgData<float> __getGaussianHpKernel1Dy(int kernel_size, float sigma)
+    {
+        ImgData<float> kernel_x = __getGaussianHpKernel1Dx(kernel_size, sigma);
+        return kernel_x._transpose();
+    }
+
+    static ImgData<float> __getGaussianHpKernel2D(int kernel_size, float sigma)
+    {
+        // 可以进一步扩充非各项同性的情况
+        ImgData<float> kernel_x = __getGaussianHpKernel1Dx(kernel_size, sigma);
+        ImgData<float> kernel_y = __getGaussianHpKernel1Dy(kernel_size, sigma);
+        return kernel_y._multiply(kernel_x);
+    }
+
     static ImgData<float> __getLaplacianKernel2D(int kernel_size)
     {
         assert(kernel_size>1 && kernel_size%2==1);

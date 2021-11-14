@@ -10,7 +10,7 @@ QMAKE_LIBDIR += .
 LIBS += -fopenmp
 
 # TO ENABLE AVX2.., CONFIG HERE
-QMAKE_CXXFLAGS += -mavx -mavx2 -mfma -msse -msse2 -msse3
+QMAKE_CXXFLAGS += -mavx -mavx2 -mfma -msse -msse2 -msse3 -mfma
 
 # TO ENABLE CUDA, CONFIG HERE
 #LIBS +=     -L. -lImgAlg_Cuda -lcudart\
