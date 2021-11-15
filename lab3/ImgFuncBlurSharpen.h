@@ -53,27 +53,27 @@ public:
         }
 
 //         USM 中值：对提取出的高频部分再做一次 median filter
-        ImgData<float> image_hf1(this->width(), this->height(), 1.0);
-        int median_size = 3;
-        int median_radius = median_size / 2;
-        for(int i=0;i<this->height();i++)
-        {
-            for(int j=0;j<this->width();j++)
-            {
-                std::vector<float> buf;
-                for(int u=-median_radius;u<=median_radius;u++)
-                {
-                    for(int v=-median_radius;v<=median_radius;v++)
-                    {
-                        buf.push_back(image_hf._pixel(j+v, i+u));
-                    }
-                }
-                std::sort(buf.begin(), buf.end());
-                image_hf1.setPixel(j,i,(buf[buf.size()/2-1] +buf[buf.size()/2] + buf[buf.size()/2+1])/3);
-            }
-        }
+//        ImgData<float> image_hf1(this->width(), this->height(), 1.0);
+//        int median_size = 3;
+//        int median_radius = median_size / 2;
+//        for(int i=0;i<this->height();i++)
+//        {
+//            for(int j=0;j<this->width();j++)
+//            {
+//                std::vector<float> buf;
+//                for(int u=-median_radius;u<=median_radius;u++)
+//                {
+//                    for(int v=-median_radius;v<=median_radius;v++)
+//                    {
+//                        buf.push_back(image_hf._pixel(j+v, i+u));
+//                    }
+//                }
+//                std::sort(buf.begin(), buf.end());
+//                image_hf1.setPixel(j,i,(buf[buf.size()/2-1] +buf[buf.size()/2] + buf[buf.size()/2+1])/3);
+//            }
+//        }
 
-        ImgData<float> image_result = image_src._add(image_hf1._amplify(alpha));
+        ImgData<float> image_result = image_src._add(image_hf._amplify(alpha));
         ImgData<T> result(this->width(), this->height(), this->range());
 
 #pragma omp parallel for

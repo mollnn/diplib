@@ -4,7 +4,6 @@
 #include "ImgData.h"
 #include "ImgAlgCopy.h"
 
-
 #include <immintrin.h>
 #include <xmmintrin.h>
 #include <avx2intrin.h>
@@ -146,6 +145,18 @@ public:
             }
         }
 
+        int *kernel_offsets = new int[kernel_height * kernel_width];
+        int *image_offsets = new int[kernel_height * kernel_width];
+
+        for (int u = 0; u < kernel_height; u++)
+        {
+            for (int v = 0; v < kernel_width; v++)
+            {
+                kernel_offsets[u * kernel_width + v] = (u * kernel_width + v) * 8;
+                image_offsets[u * kernel_width + v] = u * image_padding_width + v;
+            }
+        }
+
 #pragma omp parallel for
         for (int i = 0; i < result_height; i++)
         {
@@ -156,14 +167,13 @@ public:
                 // 每次计算 8 个连续像素的结果
                 // 卷积仍然通过循环枚举
                 __m256 sum_vec = _mm256_setzero_ps();
-                for (int u = 0; u < kernel_height; u++)
+                float *image_ps_block_ptr = image_ps + i * image_padding_width + j;
+
+                for (int k = 0; k < kernel_height * kernel_width; k++)
                 {
-                    for (int v = 0; v < kernel_width; v++)
-                    {
-                        __m256 kernel_vec = _mm256_loadu_ps(kernel_ps + (u * kernel_width + v) * 8);
-                        __m256 image_vec = _mm256_loadu_ps(image_ps+ (i + u) * image_padding_width + (j + v));
-                        __m256 sum_vec = _mm256_fmadd_ps(kernel_vec, image_vec, sum_vec);
-                    }
+                    __m256 kernel_vec = _mm256_loadu_ps(kernel_ps + kernel_offsets[k]);
+                    __m256 image_vec = _mm256_loadu_ps(image_ps_block_ptr + image_offsets[k]);
+                    sum_vec = _mm256_fmadd_ps(kernel_vec, image_vec, sum_vec);
                 }
                 _mm256_storeu_ps(sum_ps, sum_vec);
                 // 转回原类型
@@ -174,7 +184,7 @@ public:
             }
 
             // Serial for remaining
-            for (int j = 0; j < result_width; j++)
+            for (int j = result_width_r8; j < result_width; j++)
             {
                 T *image_result_px_ptr = image_result_ptr + i * result_width + j;
                 float sum = 0;
@@ -194,6 +204,9 @@ public:
 
         delete[] image_ps;
         delete[] kernel_ps;
+
+        delete[] kernel_offsets;
+        delete[] image_offsets;
 
         return result;
     }
