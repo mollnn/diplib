@@ -130,6 +130,7 @@ public:
 
         // 图像转换为 32 位浮点
         float *image_ps = new float[image_padding_width * image_padding_height];
+#pragma omp parallel for
         for (int i = 0; i < image_padding_width * image_padding_height; i++)
         {
             image_ps[i] = image_padding_ptr[i];
