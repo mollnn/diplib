@@ -16,6 +16,7 @@ protected:
     T *data_;
     void _allocate();
     void _free();
+public:
     T _pixel(int x, int y, T default_value = 0);
 
 public:
