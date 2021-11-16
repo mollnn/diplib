@@ -8,6 +8,8 @@
 #include <xmmintrin.h>
 #include <avx2intrin.h>
 
+#include <QTime>
+
 template <typename T>
 class ImgAlgConv : public virtual ImgAlgCopy<T>
 {
@@ -18,7 +20,10 @@ public:
 
     ImgData<T> _conv2d(ImgData<float> kernel)
     {
-        return this->_conv2d_Fast(kernel);
+        if(kernel.width()*kernel.height()>=9 || kernel.height()>=5)
+            return this->_conv2d_Avx2(kernel);
+        else
+            return this->_conv2d_Fast(kernel);
     }
 
     ImgData<T> _conv2d_Baseline(ImgData<float> kernel)
@@ -51,14 +56,6 @@ public:
     ImgData<T> _conv2d_Fast(ImgData<float> kernel)
     {
         // 先生成 padding 后的图像，以避免循环内层出现分支
-
-        // if(kernel.width() == 1 && kernel.height() > 19)
-        // {
-        //     // 转置后卷积
-        //     ImgAlgConv<T> image_src = this->_transpose();
-        //     return image_src._conv2d_Fast(kernel._transpose())._transpose();
-        // }
-
         ImgData<T> result(this->width_, this->height_, this->range_);
 
         int kernel_width_half = (kernel.width() - 1) / 2;
@@ -129,11 +126,19 @@ public:
         float *kernel_ptr = kernel.bits();
 
         // 图像转换为 32 位浮点
-        float *image_ps = new float[image_padding_width * image_padding_height];
-#pragma omp parallel for
-        for (int i = 0; i < image_padding_width * image_padding_height; i++)
+        float *image_ps;
+        if (sizeof(T) == 4)
         {
-            image_ps[i] = image_padding_ptr[i];
+            image_ps = reinterpret_cast<float *>(image_padding_ptr);
+        }
+        else
+        {
+            image_ps = new float[image_padding_width * image_padding_height];
+#pragma omp parallel for
+            for (int i = 0; i < image_padding_width * image_padding_height; i++)
+            {
+                image_ps[i] = image_padding_ptr[i];
+            }
         }
 
         // 卷积核扩展（每像素重复 8 次）
@@ -176,11 +181,19 @@ public:
                     __m256 image_vec = _mm256_loadu_ps(image_ps_block_ptr + image_offsets[k]);
                     sum_vec = _mm256_fmadd_ps(kernel_vec, image_vec, sum_vec);
                 }
-                _mm256_storeu_ps(sum_ps, sum_vec);
-                // 转回原类型
-                for (int r = 0; r < 8; r++)
+
+                if (sizeof(T) == 4)
                 {
-                    image_result_ptr[i * result_width + j + r] = sum_ps[r];
+                    _mm256_storeu_ps(reinterpret_cast<float *>(image_result_ptr + i * result_width + j), sum_vec);
+                }
+                else
+                {
+                    _mm256_storeu_ps(sum_ps, sum_vec);
+                    // 转回原类型
+                    for (int r = 0; r < 8; r++)
+                    {
+                        image_result_ptr[i * result_width + j + r] = sum_ps[r];
+                    }
                 }
             }
 
@@ -203,7 +216,9 @@ public:
             }
         }
 
-        delete[] image_ps;
+        if (sizeof(T) != 4)
+            delete[] image_ps;
+
         delete[] kernel_ps;
 
         delete[] kernel_offsets;
