@@ -1,11 +1,11 @@
 #ifndef ImgAlgFilter_H
 #define ImgAlgFilter_H
 
-#include "imgalgconv.h"
+#include "ImgData.h"
 #include <cmath>
 
 template <typename T>
-class ImgAlgFilter : public virtual ImgAlgConv<T>
+class ImgAlgFilter : public virtual ImgData<T>
 {
 public:
     ImgAlgFilter();
@@ -137,7 +137,7 @@ ImgData<T> ImgAlgFilter<T>::_filter(ImgData<float> kernel)
 template <typename T>
 ImgData<T> ImgAlgFilter<T>::_filter(ImgData<float> kernel_x, ImgData<float> kernel_y)
 {
-    ImgAlgConv<T> tmp = this->_conv2d(kernel_x);
+    ImgData<T> tmp = this->_conv2d(kernel_x);
     return tmp._conv2d(kernel_y);
 }
 

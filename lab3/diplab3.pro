@@ -43,7 +43,6 @@ SOURCES += \
     widget.cpp
 
 HEADERS += \
-    ImgAlgConv.h \
     ImgAlgFilter.h \
     ImgAlgMapping.h \
     ImgAlgTransform.h \
