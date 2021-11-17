@@ -287,7 +287,7 @@ template <typename T>
 void ImgAlgAffine<T>::_transformAffine_Cuda_C(T *dest_ptr, T *src_ptr, float *mat, int dest_width, int dest_height, int src_width, int src_height, T default_value)
 {
     // Since difference of ABI between MSVC(nvcc only support on Windows) and MinGW, we cannot dllexport & dllimport a Cpp style function, let alone template
-    // Here's a very stupid substitution -_-b
+    // Here's a very stupid substitution
     if (sizeof(T) == 1)
     {
         __ImgAlgAffine_affineTransform_cuda_epi8(reinterpret_cast<uint8_t *>(dest_ptr), reinterpret_cast<uint8_t *>(src_ptr),

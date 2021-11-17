@@ -175,14 +175,14 @@ void Widget::_loadImage()
 
         slider_smooth_sigma_->setValue(smooth_sigma_);
         spinbox_smooth_sigma_->setValue(smooth_sigma_);
+
+        this->_render();
+        this->_reLayout();
     }
     catch (...)
     {
         qDebug() << "error to load image.";
     }
-
-    this->_render();
-    this->_reLayout();
 }
 
 void Widget::_saveImage()

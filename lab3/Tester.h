@@ -5,7 +5,9 @@
 #include <QDebug>
 #include "Img.h"
 
-// add necessary includes here
+// 自动测试程序
+// _valid：正确性验证
+// _benchmark：性能测试
 
 class Test1 : public QObject
 {
