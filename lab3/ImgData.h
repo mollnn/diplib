@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <cmath>
 
+// TODO: 饱和饱和
+
 template <typename T>
 class ImgData
 {
@@ -215,12 +217,33 @@ ImgData<T> ImgData<T>::_add(const ImgData<T> &rhs)
 
     ImgData<T> result(this->width(), this->height(), this->range());
 
-#pragma omp parallel for
-    for (int i = 0; i < this->height(); i++)
+    if (std::is_same_v<T, float>)
     {
-        for (int j = 0; j < this->width(); j++)
+#pragma omp parallel for
+        for (int i = 0; i < this->height(); i++)
         {
-            result.setPixel(j, i, this->pixel(j, i) + rhs.pixel(j, i));
+            for (int j = 0; j < this->width(); j++)
+            {
+                result.setPixel(j, i, this->pixel(j, i) + rhs.pixel(j, i));
+            }
+        }
+    }
+    else
+    {
+        // 整数需要饱和运算
+        int range_max = (1ll << 8 * sizeof(T)) - 1;
+#pragma omp parallel for
+        for (int i = 0; i < this->height(); i++)
+        {
+            for (int j = 0; j < this->width(); j++)
+            {
+                int64_t value = 0ll + this->pixel(j, i) + rhs.pixel(j, i);
+                if (value < 0)
+                    value = 0;
+                if (value > range_max)
+                    value = range_max;
+                result.setPixel(j, i, value);
+            }
         }
     }
 
@@ -232,12 +255,33 @@ ImgData<T> ImgData<T>::_amplify(float rhs)
 {
     ImgData<T> result(this->width(), this->height(), this->range());
 
-#pragma omp parallel for
-    for (int i = 0; i < this->height(); i++)
+    if (std::is_same_v<T, float>)
     {
-        for (int j = 0; j < this->width(); j++)
+#pragma omp parallel for
+        for (int i = 0; i < this->height(); i++)
         {
-            result.setPixel(j, i, this->pixel(j, i) * rhs);
+            for (int j = 0; j < this->width(); j++)
+            {
+                result.setPixel(j, i, this->pixel(j, i) * rhs);
+            }
+        }
+    }
+    else
+    {
+        // 整数需要饱和运算
+        int range_max = (1ll << 8 * sizeof(T)) - 1;
+#pragma omp parallel for
+        for (int i = 0; i < this->height(); i++)
+        {
+            for (int j = 0; j < this->width(); j++)
+            {
+                int64_t value = 0ll + this->pixel(j, i) * rhs;
+                if (value < 0)
+                    value = 0;
+                if (value > range_max)
+                    value = range_max;
+                result.setPixel(j, i, value);
+            }
         }
     }
 
