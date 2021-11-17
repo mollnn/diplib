@@ -1,4 +1,4 @@
-#include "vec3.h"
+#include "ImgUtil_vec3.h"
 
 vec3::vec3() {}
 vec3::vec3(float a, float b, float c) : x(a), y(b), z(c) {}

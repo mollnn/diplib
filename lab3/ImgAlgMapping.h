@@ -1,15 +1,15 @@
-#ifndef IMGALGLINEARMAPPER_H
-#define IMGALGLINEARMAPPER_H
+#ifndef ImgAlgMapping_H
+#define ImgAlgMapping_H
 
 #include "ImgData.h"
 
 #include <immintrin.h>
 
 template <typename T>
-class ImgAlgLinearMap : public virtual ImgData<T>
+class ImgAlgMapping : public virtual ImgData<T>
 {
 public:
-    ImgAlgLinearMap() {}
+    ImgAlgMapping() {}
 
 protected:
     template <typename R = T>
@@ -33,7 +33,7 @@ protected:
 
 template <typename T>
 template <typename R>
-R ImgAlgLinearMap<T>::__pxLinearMapSimple(T pixel, R target_range, T source_range)
+R ImgAlgMapping<T>::__pxLinearMapSimple(T pixel, R target_range, T source_range)
 {
     // For example, 65535 -> 255:
     //  0->0, 255->0, 256->1, 511->1, ..., 65535->255
@@ -42,7 +42,7 @@ R ImgAlgLinearMap<T>::__pxLinearMapSimple(T pixel, R target_range, T source_rang
 
 template <typename T>
 template <typename R>
-R ImgAlgLinearMap<T>::__pxLinearMapRange(T pixel, R target_min, R target_max, T source_min, T source_max)
+R ImgAlgMapping<T>::__pxLinearMapRange(T pixel, R target_min, R target_max, T source_min, T source_max)
 {
     int64_t delta = 1 * pixel - source_min;
     if (delta > source_max - source_min)
@@ -56,7 +56,7 @@ R ImgAlgLinearMap<T>::__pxLinearMapRange(T pixel, R target_min, R target_max, T 
 
 template <typename T>
 template <typename R>
-ImgData<R> ImgAlgLinearMap<T>::_linearMapSimple(R target_range, T source_range)
+ImgData<R> ImgAlgMapping<T>::_linearMapSimple(R target_range, T source_range)
 {
     R type_max = (1ull << (8 * sizeof(R))) - 1;
     ImgData<R> result(this->width_, this->height_, type_max);
@@ -74,7 +74,7 @@ ImgData<R> ImgAlgLinearMap<T>::_linearMapSimple(R target_range, T source_range)
 
 template <typename T>
 template <typename R>
-ImgData<R> ImgAlgLinearMap<T>::_linearMapRange_Baseline(R target_min, R target_max, T source_min, T source_max)
+ImgData<R> ImgAlgMapping<T>::_linearMapRange_Baseline(R target_min, R target_max, T source_min, T source_max)
 {
     R type_max = (1ull << (8 * sizeof(R))) - 1;
     ImgData<R> result(this->width_, this->height_, type_max);
@@ -94,7 +94,7 @@ ImgData<R> ImgAlgLinearMap<T>::_linearMapRange_Baseline(R target_min, R target_m
 
 template <typename T>
 template <typename R>
-ImgData<R> ImgAlgLinearMap<T>::_linearMapRange_LUT(R target_min, R target_max, T source_min, T source_max)
+ImgData<R> ImgAlgMapping<T>::_linearMapRange_LUT(R target_min, R target_max, T source_min, T source_max)
 {
     R type_max = (1ull << (8 * sizeof(R))) - 1;
     ImgData<R> result(this->width_, this->height_, type_max);
@@ -125,7 +125,7 @@ ImgData<R> ImgAlgLinearMap<T>::_linearMapRange_LUT(R target_min, R target_max, T
 
 template <typename T>
 template <typename R>
-ImgData<R> ImgAlgLinearMap<T>::_linearMapRange(R target_min, R target_max, T source_min, T source_max)
+ImgData<R> ImgAlgMapping<T>::_linearMapRange(R target_min, R target_max, T source_min, T source_max)
 {
     return _linearMapRange_LUT(target_min, target_max, source_min, source_max);
 }

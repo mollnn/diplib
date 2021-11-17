@@ -1,5 +1,5 @@
-#ifndef IMGPLOT_H
-#define IMGPLOT_H
+#ifndef QImagePlot_H
+#define QImagePlot_H
 
 #include <QObject>
 #include <QWidget>

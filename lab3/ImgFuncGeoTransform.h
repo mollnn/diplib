@@ -1,22 +1,20 @@
-#ifndef IMGAFFINE_H
-#define IMGAFFINE_H
+#ifndef ImgFuncGeoTransform_H
+#define ImgFuncGeoTransform_H
 
-#include "ImgAlgInterp.h"
-#include "ImgAlgCopy.h"
-#include "ImgAlgAffine.h"
-#include "mathheader.h"
-#include "TransformMatrix.h"
+#include "ImgAlgTransform.h"
+#include "ImgUtil_mathheader.h"
+#include "ImgUtilTransformMatrix.h"
 #include <cmath>
 
 template <typename T>
-class ImgFuncTransform : public virtual ImgAlgAffine<T>, public virtual ImgAlgCopy<T>
+class ImgFuncGeoTransform : public virtual ImgAlgTransform<T>
 {
 public:
-    ImgFuncTransform() {}
+    ImgFuncGeoTransform() {}
 
 public:
-    ImgData<T> transformAffine(TransformMatrix transform, int target_width, int target_height);
-    ImgData<T> transformAffine(TransformMatrix transform);
+    ImgData<T> transformAffine(ImgUtilTransformMatrix transform, int target_width, int target_height);
+    ImgData<T> transformAffine(ImgUtilTransformMatrix transform);
 
     ImgData<T> transformStd(float translate_x, float translate_y, float rotate_rad, float scale, float anchor_x, float anchor_y, int target_width, int target_height);
     ImgData<T> transformStd(float translate_x, float translate_y, float rotate_rad, float scale, float anchor_x, float anchor_y);
@@ -34,22 +32,22 @@ public:
 /////////////////////////////////////////////////////
 
 template <typename T>
-ImgData<T> ImgFuncTransform<T>::transformAffine(TransformMatrix transform, int target_width, int target_height)
+ImgData<T> ImgFuncGeoTransform<T>::transformAffine(ImgUtilTransformMatrix transform, int target_width, int target_height)
 {
     return this->_transformAffine(transform.to_mat3(), target_width, target_height);
 }
 
 template <typename T>
-ImgData<T> ImgFuncTransform<T>::transformAffine(TransformMatrix transform)
+ImgData<T> ImgFuncGeoTransform<T>::transformAffine(ImgUtilTransformMatrix transform)
 {
     return this->_transformAffine(transform.to_mat3(), this->width_, this->height_);
 }
 
 template <typename T>
-ImgData<T> ImgFuncTransform<T>::transformStd(float translate_x, float translate_y, float rotate_rad, float scale, float anchor_x, float anchor_y, int target_width, int target_height)
+ImgData<T> ImgFuncGeoTransform<T>::transformStd(float translate_x, float translate_y, float rotate_rad, float scale, float anchor_x, float anchor_y, int target_width, int target_height)
 {
     // 顺序： scale, rotate, translate
-    TransformMatrix transform;
+    ImgUtilTransformMatrix transform;
     transform.translate(-anchor_x, -anchor_y);
     transform.rotate(rotate_rad);
     transform.scale(scale);
@@ -58,29 +56,29 @@ ImgData<T> ImgFuncTransform<T>::transformStd(float translate_x, float translate_
 }
 
 template <typename T>
-ImgData<T> ImgFuncTransform<T>::transformStd(float translate_x, float translate_y, float rotate_rad, float scale, float anchor_x, float anchor_y)
+ImgData<T> ImgFuncGeoTransform<T>::transformStd(float translate_x, float translate_y, float rotate_rad, float scale, float anchor_x, float anchor_y)
 {
     return transformStd(translate_x, translate_y, rotate_rad, scale, anchor_x, anchor_y);
 }
 
 template <typename T>
-ImgData<T> ImgFuncTransform<T>::transformStd(float translate_x, float translate_y, float rotate_rad, float scale)
+ImgData<T> ImgFuncGeoTransform<T>::transformStd(float translate_x, float translate_y, float rotate_rad, float scale)
 {
     return transformStd(translate_x, translate_y, rotate_rad, scale, this->width_ * 0.5f, this->height_ * 0.5f);
 }
 
 template <typename T>
-ImgData<T> ImgFuncTransform<T>::translate(float translate_x, float translate_y)
+ImgData<T> ImgFuncGeoTransform<T>::translate(float translate_x, float translate_y)
 {
-    TransformMatrix transform;
+    ImgUtilTransformMatrix transform;
     transform.translate(translate_x, translate_y);
     return this->_transformAffine(transform.to_mat3(), this->width_, this->height_);
 }
 
 template <typename T>
-ImgData<T> ImgFuncTransform<T>::rotate(float rotate_rad, float anchor_x, float anchor_y)
+ImgData<T> ImgFuncGeoTransform<T>::rotate(float rotate_rad, float anchor_x, float anchor_y)
 {
-    TransformMatrix transform;
+    ImgUtilTransformMatrix transform;
     transform.translate(-anchor_x, -anchor_y);
     transform.rotate(rotate_rad);
     transform.translate(anchor_x, anchor_y);
@@ -88,15 +86,15 @@ ImgData<T> ImgFuncTransform<T>::rotate(float rotate_rad, float anchor_x, float a
 }
 
 template <typename T>
-ImgData<T> ImgFuncTransform<T>::rotate(float rotate_rad)
+ImgData<T> ImgFuncGeoTransform<T>::rotate(float rotate_rad)
 {
     return this->rotate(rotate_rad, this->width_ * 0.5f, this->height_ * 0.5f);
 }
 
 template <typename T>
-ImgData<T> ImgFuncTransform<T>::scale(float scale, float anchor_x, float anchor_y)
+ImgData<T> ImgFuncGeoTransform<T>::scale(float scale, float anchor_x, float anchor_y)
 {
-    TransformMatrix transform;
+    ImgUtilTransformMatrix transform;
     transform.translate(-anchor_x, -anchor_y);
     transform.scale(scale);
     transform.translate(anchor_x, anchor_y);
@@ -104,13 +102,13 @@ ImgData<T> ImgFuncTransform<T>::scale(float scale, float anchor_x, float anchor_
 }
 
 template <typename T>
-ImgData<T> ImgFuncTransform<T>::scale(float scale)
+ImgData<T> ImgFuncGeoTransform<T>::scale(float scale)
 {
     return this->scale(scale, this->width_ * 0.5f, this->height_ * 0.5f);
 }
 
 template <typename T>
-ImgData<T> ImgFuncTransform<T>::crop(float x0, float y0, int target_width, int target_height, float rotation, float scale)
+ImgData<T> ImgFuncGeoTransform<T>::crop(float x0, float y0, int target_width, int target_height, float rotation, float scale)
 {
     if (rotation == 0 && scale == 1)
     {

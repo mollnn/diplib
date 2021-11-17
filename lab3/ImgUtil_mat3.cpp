@@ -1,4 +1,4 @@
-#include "mat3.h"
+#include "ImgUtil_mat3.h"
 
 mat3::mat3()
 {

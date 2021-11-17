@@ -1,8 +1,8 @@
-#ifndef MAT3_H
-#define MAT3_H
+#ifndef ImgUtil_mat3_H
+#define ImgUtil_mat3_H
 
 #include <cmath>
-#include "vec3.h"
+#include "ImgUtil_vec3.h"
 
 // Matrix 3x3
 struct mat3

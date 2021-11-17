@@ -1,8 +1,7 @@
-#ifndef IMGALGCONV_H
-#define IMGALGCONV_H
+#ifndef ImgAlgConv_H
+#define ImgAlgConv_H
 
 #include "ImgData.h"
-#include "ImgAlgCopy.h"
 
 #include <immintrin.h>
 #include <xmmintrin.h>
@@ -11,7 +10,7 @@
 #include <QTime>
 
 template <typename T>
-class ImgAlgConv : public virtual ImgAlgCopy<T>
+class ImgAlgConv : public virtual ImgData<T>
 {
 public:
     ImgAlgConv();

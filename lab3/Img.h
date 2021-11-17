@@ -1,5 +1,5 @@
-#ifndef IMG_H
-#define IMG_H
+#ifndef Img_H
+#define Img_H
 
 ///////////////////////////////////////////////
 /// 类结构
@@ -41,12 +41,12 @@
 #endif
 
 #include "ImgConvert.h"
-#include "ImgFuncTransform.h"
+#include "ImgFuncGeoTransform.h"
 #include "ImgFuncGrayWindow.h"
 #include "ImgFuncBlurSharpen.h"
 
 template <typename T>
-class Img : public virtual ImgConvert<T>, public virtual ImgFuncTransform<T>, public virtual ImgFuncGrayWindow<T>, public virtual ImgFuncBlurSharpen<T>
+class Img : public virtual ImgConvert<T>, public virtual ImgFuncGeoTransform<T>, public virtual ImgFuncGrayWindow<T>, public virtual ImgFuncBlurSharpen<T>
 {
 public:
     Img() {}

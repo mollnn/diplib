@@ -1,12 +1,12 @@
-#ifndef IMGGRAYWINDOW_H
-#define IMGGRAYWINDOW_H
+#ifndef ImgFuncGrayWindow_H
+#define ImgFuncGrayWindow_H
 
 #include "ImgData.h"
-#include "ImgAlgLinearMap.h"
+#include "ImgAlgMapping.h"
 #include <cmath>
 
 template <typename T>
-class ImgFuncGrayWindow : public virtual ImgAlgLinearMap<T>
+class ImgFuncGrayWindow : public virtual ImgAlgMapping<T>
 {
 public:
     ImgFuncGrayWindow() {}

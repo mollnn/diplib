@@ -33,35 +33,33 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    ImgUtilTransformMatrix.cpp \
+    ImgUtil_mat3.cpp \
+    ImgUtil_vec3.cpp \
     QImagePlot.cpp \
     QImagePlotBox.cpp \
     Tester.cpp \
-    TransformMatrix.cpp \
     main.cpp \
-    mat3.cpp \
-    vec3.cpp \
     widget.cpp
 
 HEADERS += \
     ImgAlgConv.h \
     ImgAlgFilter.h \
+    ImgAlgMapping.h \
+    ImgAlgTransform.h \
     ImgData.h \
-    ImgAlgAffine.h \
-    ImgAlgCopy.h \
-    ImgAlgInterp.h \
-    ImgAlgLinearMap.h \
     ImgFuncBlurSharpen.h \
+    ImgFuncGeoTransform.h \
     ImgFuncGrayWindow.h \
-    ImgFuncTransform.h \
     ImgConvert.h \
     Img.h \
+    ImgUtilTransformMatrix.h \
+    ImgUtil_mat3.h \
+    ImgUtil_mathheader.h \
+    ImgUtil_vec3.h \
     QImagePlot.h \
     QImagePlotBox.h \
     Tester.h \
-    TransformMatrix.h \
-    mat3.h \
-    mathheader.h \
-    vec3.h \
     widget.h
 
 

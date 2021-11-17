@@ -1,5 +1,5 @@
-#ifndef IMGFUNCBLURSHARPEN_H
-#define IMGFUNCBLURSHARPEN_H
+#ifndef ImgFuncBlurSharpen_H
+#define ImgFuncBlurSharpen_H
 
 #include "ImgAlgFilter.h"
 #include <cmath>

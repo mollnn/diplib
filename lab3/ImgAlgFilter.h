@@ -1,5 +1,5 @@
-#ifndef IMGALGFILTER_H
-#define IMGALGFILTER_H
+#ifndef ImgAlgFilter_H
+#define ImgAlgFilter_H
 
 #include "imgalgconv.h"
 #include <cmath>
