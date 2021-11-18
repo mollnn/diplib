@@ -21,7 +21,6 @@ public:
 
 protected:
     inline T _pxInterpBilinear(float x, float y);
-
 #ifdef IMG_ENABLE_AVX2
     static inline __m256 __8pxInterpBilinear_Avx2_ps(float *source_image_ps, __m256 xi, __m256 yi, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value);
 #endif

@@ -127,13 +127,14 @@ void Widget::_render()
 
     ImgData<float> kernel = Img<float>::__getLaplacianKernel2D(3);
 
-
-    // 就应用而言，灰度窗参数变化较少，可以缓存 img_tmp
-    // 这里为了测试处理流程的整体性能，每次重新计算灰度映射和插值变换
-    Img<uint8_t> img_tmp = Img<uint16_t>(Img<uint16_t>(img_in_.gaussianBlur(0.01 * smooth_sigma_))._unsharpMasking(kernel, -0.1 * usm_intensity_, usm_threshold_)).applyGrayWindow<uint8_t>(gray_window_breadth_, gray_window_position_);
-    img_out_ = img_tmp.crop((-view_width + src_width) / 2 + view_offset_x_,
-                            (-view_height + src_height) / 2 + view_offset_y_,
-                            view_width, view_height, view_rotation_, view_scale_);
+    // 就应用而言，可以缓存中间结果
+    // 这里为了测试处理流程的整体性能，每次重新执行整个计算流程
+    Img<uint16_t> img_denoise = img_in_.gaussianBlur(0.01 * smooth_sigma_);
+    Img<uint16_t> img_usm = img_denoise._unsharpMasking(kernel, -0.1 * usm_intensity_, usm_threshold_);
+    Img<uint8_t> img_graywnd = img_usm.applyGrayWindow<uint8_t>(gray_window_breadth_, gray_window_position_);
+    img_out_ = img_graywnd.crop((-view_width + src_width) / 2 + view_offset_x_,
+                                (-view_height + src_height) / 2 + view_offset_y_,
+                                view_width, view_height, view_rotation_, view_scale_);
 
     img_plot_box_->imshow(img_out_.toQImage());
     this->_reLayout();
@@ -209,16 +210,13 @@ void Widget::_reLayout()
     grid_layout_->addWidget(slider_gray_window_position_, 2, 1, 1, 5);
     grid_layout_->addWidget(spinbox_gray_window_position_, 2, 6, 1, 1);
 
-
     grid_layout_->addWidget(label_usm_intensity_, 3, 0, 1, 1);
     grid_layout_->addWidget(slider_usm_intensity_, 3, 1, 1, 5);
     grid_layout_->addWidget(spinbox_usm_intensity_, 3, 6, 1, 1);
 
-
     grid_layout_->addWidget(label_usm_threshold_, 4, 0, 1, 1);
     grid_layout_->addWidget(slider_usm_threshold_, 4, 1, 1, 5);
     grid_layout_->addWidget(spinbox_usm_threshold_, 4, 6, 1, 1);
-
 
     grid_layout_->addWidget(label_smooth_sigma_, 5, 0, 1, 1);
     grid_layout_->addWidget(slider_smooth_sigma_, 5, 1, 1, 5);

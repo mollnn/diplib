@@ -12,9 +12,8 @@ public:
     ImgFuncGrayWindow() {}
 
 public:
-    // in_l, in_r 采用普通整型：为了支持超出值域的 in_l, in_r
     template <typename R>
-    ImgData<R> applyRangeScaler(int in_l, int in_r, R out_l = 0, R out_r = (1ull << (8 * sizeof(R))) - 1);
+    ImgData<R> applyRangeScaler(float in_l, float in_r, R out_l = 0, R out_r = (1ull << (8 * sizeof(R))) - 1);
 
     template <typename R>
     ImgData<R> applyGrayWindow(T breadth, T position);
@@ -22,7 +21,7 @@ public:
 
 template <typename T>
 template <typename R>
-ImgData<R> ImgFuncGrayWindow<T>::applyRangeScaler(int in_l, int in_r, R out_l, R out_r)
+ImgData<R> ImgFuncGrayWindow<T>::applyRangeScaler(float in_l, float in_r, R out_l, R out_r)
 {
     int type_max_out = (1ull << (8 * sizeof(R))) - 1;
     // 不考虑 in_l > in_r 的情况
@@ -45,8 +44,8 @@ template <typename T>
 template <typename R>
 ImgData<R> ImgFuncGrayWindow<T>::applyGrayWindow(T breadth, T position)
 {
-    int in_l = (int)position - breadth / 2;
-    int in_r = (int)position + (breadth - 1) / 2;
+    float in_l = position - breadth / 2;
+    float in_r = position + breadth / 2;
     return this->applyRangeScaler<R>(in_l, in_r);
 }
 
