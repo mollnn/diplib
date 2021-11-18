@@ -43,42 +43,15 @@ ImgData<T> ImgFuncBlurSharpen<T>::laplacian(int kernel_size)
 template <typename T>
 ImgData<T> ImgFuncBlurSharpen<T>::_unsharpMasking(ImgData<float> kernel_hpf, float alpha, T threshold)
 {
-    ImgData<float> image_src(this->width(), this->height(), 1.0);
+    float threshold_f = 1.0f * threshold / this->range_;
 
-#pragma omp parallel for
-    for (int i = 0; i < this->height(); i++)
-    {
-        for (int j = 0; j < this->width(); j++)
-        {
-            image_src.setPixel(j, i, 1.0 * this->pixel(j, i) / this->range_);
-        }
-    }
-
-    ImgData<float> image_hf = static_cast<ImgAlgFilter<float>>(image_src)._filter(kernel_hpf);
+    ImgAlgFilter<float> image_src = this->template cast<float>(1.0f / this->range_, 0);
+    ImgData<float> image_hf = image_src._filter(kernel_hpf);
 
     // USM 阈值：仅考虑高频分量绝对值超过 threshold 的部分
-    float threshold_f = 1.0 * threshold / this->range_;
-    for (int i = 0; i < this->height(); i++)
-    {
-        for (int j = 0; j < this->width(); j++)
-        {
-            image_hf.setPixel(j, i, image_hf.pixel(j, i) - std::max(-threshold_f, std::min(threshold_f, image_hf.pixel(j, i))));
-        }
-    }
-
-    ImgData<float> image_result = image_src._add(image_hf._amplify(alpha));
-    ImgData<T> result(this->width(), this->height(), this->range());
-
-#pragma omp parallel for
-    for (int i = 0; i < this->height(); i++)
-    {
-        for (int j = 0; j < this->width(); j++)
-        {
-            result.setPixel(j, i, image_result.pixelClamped(j, i) * this->range_);
-        }
-    }
-
-    return result;
+    ImgData<float> image_scrap = image_hf._clamp(-threshold_f, +threshold_f);
+    ImgData<float> image_result = image_src + (image_hf - image_scrap) * alpha;
+    return image_result._clamp(0, 1).cast<T>(this->range_, 0);
 }
 
 #endif // IMGFUNCBLURSHARPEN_H

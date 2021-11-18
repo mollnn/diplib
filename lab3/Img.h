@@ -27,7 +27,7 @@
 /// QImagePlotBox           QImage 高级显示
 ///////////////////////////////////////////////
 /// 命名规则示例：Class.fPub(), Class._fPro(), Clas.__fStaticPro
-///       Class._fPriv_Spec(), Class.mem_var, fGlobal(), local_var
+///       Class._fPriv_Spec(), Class.mem_var_, fGlobal(), local_var
 ///////////////////////////////////////////////
 /// 实现版本命名示例：
 /// Baseline(定义的，直觉的，确保正确的版本)

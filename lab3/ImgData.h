@@ -42,6 +42,11 @@ public:
     void clear();
     T *bits();
 
+    template <typename R>
+    ImgData<R> cast();
+    template <typename R>
+    ImgData<R> cast(float k, float b);
+
     // 此函数为平台相关，移植请改写
     void debug();
 
@@ -51,6 +56,7 @@ public:
 
     // Algebra
     ImgData<T> _add(const ImgData<T> &rhs);
+    ImgData<T> _subtract(const ImgData<T> &rhs);
     ImgData<T> _amplify(float rhs);
     ImgData<T> _inverse();
     ImgData<T> _transpose();
@@ -58,13 +64,26 @@ public:
     ImgData<T> _mirrorY();
     ImgData<T> _mirrorXY();
     ImgData<T> _multiply(const ImgData<T> &rhs);
+    ImgData<T> _clamp(T clamp_min, T clamp_max);
+
+    ImgData<T> operator+(const ImgData<T> &rhs);
+    ImgData<T> operator-(const ImgData<T> &rhs);
+    ImgData<T> operator*(const ImgData<T> &rhs);
+    ImgData<T> operator*(float rhs);
+    ImgData<T> operator/(float rhs);
+
+    ImgData<T> &operator+=(const ImgData<T> &rhs);
+    ImgData<T> &operator-=(const ImgData<T> &rhs);
+    ImgData<T> &operator*=(const ImgData<T> &rhs);
+    ImgData<T> &operator*=(float rhs);
+    ImgData<T> &operator/=(float rhs);
 
     // Conv
     ImgData<T> _conv2d(ImgData<float> kernel);
     ImgData<T> _conv2d_Baseline(ImgData<float> kernel);
     ImgData<T> _conv2d_Fast(ImgData<float> kernel);
     ImgData<T> _conv2d_Avx2(ImgData<float> kernel);
-    
+
     // Copy
     ImgData<T> _copySubImg(int x0, int y0, int target_width, int target_height);
 };
@@ -212,6 +231,42 @@ T *ImgData<T>::bits()
 }
 
 template <typename T>
+template <typename R>
+ImgData<R> ImgData<T>::cast()
+{
+    ImgData<R> result(this->width(), this->height(), this->range());
+    auto result_ptr = result.bits();
+    auto source_ptr = this->bits();
+#pragma omp parallel for
+    for (int i = 0; i < this->height_; i++)
+    {
+        for (int j = 0; j < this->width_; j++)
+        {
+            result_ptr[i * this->width_ + j] = source_ptr[i * this->width_ + j];
+        }
+    }
+    return result;
+}
+
+template <typename T>
+template <typename R>
+ImgData<R> ImgData<T>::cast(float k, float b)
+{
+    ImgData<R> result(this->width(), this->height(), this->range());
+    auto result_ptr = result.bits();
+    auto source_ptr = this->bits();
+#pragma omp parallel for
+    for (int i = 0; i < this->height_; i++)
+    {
+        for (int j = 0; j < this->width_; j++)
+        {
+            result_ptr[i * this->width_ + j] = k * source_ptr[i * this->width_ + j] + b;
+        }
+    }
+    return result;
+}
+
+template <typename T>
 void ImgData<T>::debug()
 {
     qDebug() << "ImgData" << this->width() << this->height() << this->range();
@@ -233,33 +288,32 @@ ImgData<T> ImgData<T>::_add(const ImgData<T> &rhs)
 
     ImgData<T> result(this->width(), this->height(), this->range());
 
-    if (std::is_same_v<T, float>)
-    {
 #pragma omp parallel for
-        for (int i = 0; i < this->height(); i++)
+    for (int i = 0; i < this->height(); i++)
+    {
+        for (int j = 0; j < this->width(); j++)
         {
-            for (int j = 0; j < this->width(); j++)
-            {
-                result.setPixel(j, i, this->pixel(j, i) + rhs.pixel(j, i));
-            }
+            result.setPixel(j, i, this->pixel(j, i) + rhs.pixel(j, i));
         }
     }
-    else
-    {
-        // 整数需要饱和运算
-        int range_max = (1ll << 8 * sizeof(T)) - 1;
+
+    return result;
+}
+
+template <typename T>
+ImgData<T> ImgData<T>::_subtract(const ImgData<T> &rhs)
+{
+    assert(this->width() == rhs.width());
+    assert(this->height() == rhs.height());
+
+    ImgData<T> result(this->width(), this->height(), this->range());
+
 #pragma omp parallel for
-        for (int i = 0; i < this->height(); i++)
+    for (int i = 0; i < this->height(); i++)
+    {
+        for (int j = 0; j < this->width(); j++)
         {
-            for (int j = 0; j < this->width(); j++)
-            {
-                int64_t value = 0ll + this->pixel(j, i) + rhs.pixel(j, i);
-                if (value < 0)
-                    value = 0;
-                if (value > range_max)
-                    value = range_max;
-                result.setPixel(j, i, value);
-            }
+            result.setPixel(j, i, this->pixel(j, i) - rhs.pixel(j, i));
         }
     }
 
@@ -271,33 +325,12 @@ ImgData<T> ImgData<T>::_amplify(float rhs)
 {
     ImgData<T> result(this->width(), this->height(), this->range());
 
-    if (std::is_same_v<T, float>)
-    {
 #pragma omp parallel for
-        for (int i = 0; i < this->height(); i++)
-        {
-            for (int j = 0; j < this->width(); j++)
-            {
-                result.setPixel(j, i, this->pixel(j, i) * rhs);
-            }
-        }
-    }
-    else
+    for (int i = 0; i < this->height(); i++)
     {
-        // 整数需要饱和运算
-        int range_max = (1ll << 8 * sizeof(T)) - 1;
-#pragma omp parallel for
-        for (int i = 0; i < this->height(); i++)
+        for (int j = 0; j < this->width(); j++)
         {
-            for (int j = 0; j < this->width(); j++)
-            {
-                int64_t value = 0ll + this->pixel(j, i) * rhs;
-                if (value < 0)
-                    value = 0;
-                if (value > range_max)
-                    value = range_max;
-                result.setPixel(j, i, value);
-            }
+            result.setPixel(j, i, this->pixel(j, i) * rhs);
         }
     }
 
@@ -416,6 +449,95 @@ ImgData<T> ImgData<T>::_multiply(const ImgData<T> &rhs)
 }
 
 template <typename T>
+ImgData<T> ImgData<T>::_clamp(T clamp_min, T clamp_max)
+{
+    ImgData<T> result(this->width(), this->height(), this->range_);
+
+#pragma omp parallel for
+    for (int i = 0; i < this->height(); i++)
+    {
+        for (int j = 0; j < this->width(); j++)
+        {
+            T value = this->pixel(j, i);
+            if (value < clamp_min)
+                value = clamp_min;
+            if (value > clamp_max)
+                value = clamp_max;
+            result.setPixel(j, i, value);
+        }
+    }
+
+    return result;
+}
+
+template <typename T>
+ImgData<T> ImgData<T>::operator+(const ImgData<T> &rhs)
+{
+    return this->_add(rhs);
+}
+
+template <typename T>
+ImgData<T> ImgData<T>::operator-(const ImgData<T> &rhs)
+{
+    return this->_subtract(rhs);
+}
+
+template <typename T>
+ImgData<T> ImgData<T>::operator*(const ImgData<T> &rhs)
+{
+    return this->_multiply(rhs);
+}
+
+template <typename T>
+ImgData<T> ImgData<T>::operator*(float rhs)
+{
+    return this->_amplify(rhs);
+}
+
+template <typename T>
+ImgData<T> ImgData<T>::operator/(float rhs)
+{
+    return this->_amplify(1.0f / rhs);
+}
+
+template <typename T>
+ImgData<T> &ImgData<T>::operator+=(const ImgData<T> &rhs)
+{
+    *this = *this + rhs;
+    return *this;
+}
+
+template <typename T>
+
+ImgData<T> &ImgData<T>::operator-=(const ImgData<T> &rhs)
+{
+    *this = *this - rhs;
+    return *this;
+}
+
+template <typename T>
+
+ImgData<T> &ImgData<T>::operator*=(const ImgData<T> &rhs)
+{
+    *this = *this * rhs;
+    return *this;
+}
+
+template <typename T>
+ImgData<T> &ImgData<T>::operator*=(float rhs)
+{
+    *this = *this * rhs;
+    return *this;
+}
+
+template <typename T>
+ImgData<T> &ImgData<T>::operator/=(float rhs)
+{
+    *this = *this / rhs;
+    return *this;
+}
+
+template <typename T>
 ImgData<T> ImgData<T>::_copySubImg(int x0, int y0, int target_width, int target_height)
 {
     ImgData<T> result(target_width, target_height, this->range_);
@@ -466,8 +588,6 @@ ImgData<T> ImgData<T>::_copySubImg(int x0, int y0, int target_width, int target_
     }
     return result;
 }
-
-
 
 template <typename T>
 ImgData<T> ImgData<T>::_conv2d(ImgData<float> kernel)
