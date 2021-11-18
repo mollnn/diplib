@@ -13,7 +13,6 @@
 #include "ImgAlg_Cuda.h"
 #endif
 
-
 template <typename T>
 class ImgAlgTransform : public virtual ImgData<T>
 {
@@ -21,7 +20,6 @@ public:
     ImgAlgTransform() {}
 
 protected:
-
     inline T _pxInterpBilinear(float x, float y);
 
 #ifdef IMG_ENABLE_AVX2
@@ -57,9 +55,6 @@ private:
 #endif
 private:
 };
-
-
-
 
 template <typename T>
 T ImgAlgTransform<T>::_pxInterpBilinear(float x, float y)
@@ -268,15 +263,20 @@ void ImgAlgTransform<T>::_interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float *
 {
     // Since difference of ABI between MSVC(nvcc only support on Windows) and MinGW, we cannot dllexport & dllimport a Cpp style function, let alone template
     // Here's a very stupid substitution -_-b
-    if (sizeof(T) == 1)
+    if (std::is_same_v<T, uint8_t>)
     {
-        __ImgAlgInterp_interpBilinear_cuda_epi8(reinterpret_cast<uint8_t *>(dest_ptr), reinterpret_cast<uint8_t *>(src_ptr),
+        __ImgAlgInterp_interpBilinear_cuda_epu8(reinterpret_cast<uint8_t *>(dest_ptr), reinterpret_cast<uint8_t *>(src_ptr),
                                                 x_coords, y_coords, dest_width, dest_height, src_width, src_height, default_value);
     }
-    else if (sizeof(T) == 2)
+    else if (std::is_same_v<T, uint16_t>)
     {
-        __ImgAlgInterp_interpBilinear_cuda_epi16(reinterpret_cast<uint16_t *>(dest_ptr), reinterpret_cast<uint16_t *>(src_ptr),
+        __ImgAlgInterp_interpBilinear_cuda_epu16(reinterpret_cast<uint16_t *>(dest_ptr), reinterpret_cast<uint16_t *>(src_ptr),
                                                  x_coords, y_coords, dest_width, dest_height, src_width, src_height, default_value);
+    }
+    else if (std::is_same_v<T, float>)
+    {
+        __ImgAlgInterp_interpBilinear_cuda_ps(reinterpret_cast<float *>(dest_ptr), reinterpret_cast<float *>(src_ptr),
+                                              x_coords, y_coords, dest_width, dest_height, src_width, src_height, default_value);
     }
     else
     {
@@ -284,9 +284,6 @@ void ImgAlgTransform<T>::_interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float *
     }
 }
 #endif
-
-
-
 
 template <typename T>
 ImgData<T> ImgAlgTransform<T>::_transformAffine_Baseline(const mat3 &transform_matrix, int target_width, int target_height)
@@ -536,14 +533,19 @@ void ImgAlgTransform<T>::_transformAffine_Cuda_C(T *dest_ptr, T *src_ptr, float 
 {
     // Since difference of ABI between MSVC(nvcc only support on Windows) and MinGW, we cannot dllexport & dllimport a Cpp style function, let alone template
     // Here's a very stupid substitution
-    if (sizeof(T) == 1)
+    if (std::is_same_v<T, uint8_t>)
     {
-        __ImgAlgTransform_affineTransform_cuda_epi8(reinterpret_cast<uint8_t *>(dest_ptr), reinterpret_cast<uint8_t *>(src_ptr),
-                                                 mat, dest_width, dest_height, src_width, src_height, default_value);
+        __ImgAlgTransform_affineTransform_cuda_epu8(reinterpret_cast<uint8_t *>(dest_ptr), reinterpret_cast<uint8_t *>(src_ptr),
+                                                    mat, dest_width, dest_height, src_width, src_height, default_value);
     }
-    else if (sizeof(T) == 2)
+    else if (std::is_same_v<T, uint16_t>)
     {
         __ImgAlgTransform_affineTransform_cuda_epi16(reinterpret_cast<uint16_t *>(dest_ptr), reinterpret_cast<uint16_t *>(src_ptr),
+                                                     mat, dest_width, dest_height, src_width, src_height, default_value);
+    }
+    else if (std::is_same_v<T, float>)
+    {
+        __ImgAlgTransform_affineTransform_cuda_ps(reinterpret_cast<float *>(dest_ptr), reinterpret_cast<float *>(src_ptr),
                                                   mat, dest_width, dest_height, src_width, src_height, default_value);
     }
     else

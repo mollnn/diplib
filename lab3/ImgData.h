@@ -702,7 +702,7 @@ ImgData<T> ImgData<T>::_conv2d_Avx2(ImgData<float> kernel)
 
     // 图像转换为 32 位浮点
     float *image_ps;
-    if (sizeof(T) == 4)
+    if (std::is_same_v<T, float>)
     {
         image_ps = reinterpret_cast<float *>(image_padding_ptr);
     }
@@ -757,7 +757,7 @@ ImgData<T> ImgData<T>::_conv2d_Avx2(ImgData<float> kernel)
                 sum_vec = _mm256_fmadd_ps(kernel_vec, image_vec, sum_vec);
             }
 
-            if (sizeof(T) == 4)
+            if (std::is_same_v<T, float>)
             {
                 _mm256_storeu_ps(reinterpret_cast<float *>(image_result_ptr + i * result_width + j), sum_vec);
             }
@@ -791,7 +791,7 @@ ImgData<T> ImgData<T>::_conv2d_Avx2(ImgData<float> kernel)
         }
     }
 
-    if (sizeof(T) != 4)
+    if (!(std::is_same_v<T, float>))
         delete[] image_ps;
 
     delete[] kernel_ps;

@@ -32,14 +32,22 @@ void ImgConvert<T>::fromQImage(const QImage &qimage)
     T type_max = (1ull << (8 * sizeof(T))) - 1;
     this->range_ = type_max;
 
-    if (sizeof(T) <= 2)
+    if (std::is_same_v<T, uint8_t>)
     {
-        QImage tmp_qimage = qimage.convertToFormat(sizeof(T) == 1 ? QImage::Format_Grayscale8 : QImage::Format_Grayscale16);
+        QImage tmp_qimage = qimage.convertToFormat(QImage::Format_Grayscale8);
+        for (int i = 0; i < this->height_; i++)
+            memcpy(this->data_ + i * this->width_, tmp_qimage.bits() + i * tmp_qimage.bytesPerLine(), sizeof(T) * this->width_);
+    }
+    else if (std::is_same_v<T, uint16_t>)
+    {
+        QImage tmp_qimage = qimage.convertToFormat(QImage::Format_Grayscale16);
         for (int i = 0; i < this->height_; i++)
             memcpy(this->data_ + i * this->width_, tmp_qimage.bits() + i * tmp_qimage.bytesPerLine(), sizeof(T) * this->width_);
     }
     else
+    {
         throw("Unsupported ImgData Pixel Type!");
+    }
 }
 
 template <typename T>
@@ -50,7 +58,7 @@ QImage ImgConvert<T>::toQImage()
 
     if (type_max == range_max)
     {
-        if (sizeof(T) == 1)
+        if (std::is_same_v<T, uint8_t>)
         {
             T *tmp_data = new T[((this->width_ + 3) / 4 * 4) * this->height_];
             for (int i = 0; i < this->height_; i++)
@@ -60,7 +68,7 @@ QImage ImgConvert<T>::toQImage()
                 { delete[](uchar *) ptr; },
                 tmp_data);
         }
-        else if (sizeof(T) == 2)
+        else if (std::is_same_v<T, uint16_t>)
         {
             T *tmp_data = new T[((this->width_ + 1) / 2 * 2) * this->height_];
             for (int i = 0; i < this->height_; i++)
@@ -71,7 +79,9 @@ QImage ImgConvert<T>::toQImage()
                 tmp_data);
         }
         else
+        {
             throw("Unsupported ImgData Pixel Type!");
+        }
     }
     else
     {
