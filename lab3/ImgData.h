@@ -8,8 +8,6 @@
 #include "immintrin.h"
 #include "ammintrin.h"
 
-// TODO: 饱和饱和
-
 template <typename T>
 class ImgData
 {
@@ -17,11 +15,10 @@ protected:
     // 所有子类必须保证 sizeof(data)=width*height，width,height 对用户是只读的
     int width_;
     int height_;
-    T range_; // value in [0, range]
+    T range_; // unsigned value in [0, range], signed value in [-range, range] (float)
     T *data_;
     void _allocate();
     void _free();
-    ImgData<T> _copySubImg(int x0, int y0, int target_width, int target_height);
 
 public:
     T _pixel(int x, int y, T default_value = 0);
@@ -48,6 +45,11 @@ public:
     // 此函数为平台相关，移植请改写
     void debug();
 
+    // 对所有算子，不检查范围，不做饱和运算，选择确保正确的中间运算类型
+    // 饱和运算的责任交给用户
+    // uint16 -> float -> ... -> float -> clamped -> uint16
+
+    // Algebra
     ImgData<T> _add(const ImgData<T> &rhs);
     ImgData<T> _amplify(float rhs);
     ImgData<T> _inverse();
@@ -57,10 +59,14 @@ public:
     ImgData<T> _mirrorXY();
     ImgData<T> _multiply(const ImgData<T> &rhs);
 
+    // Conv
     ImgData<T> _conv2d(ImgData<float> kernel);
     ImgData<T> _conv2d_Baseline(ImgData<float> kernel);
     ImgData<T> _conv2d_Fast(ImgData<float> kernel);
     ImgData<T> _conv2d_Avx2(ImgData<float> kernel);
+    
+    // Copy
+    ImgData<T> _copySubImg(int x0, int y0, int target_width, int target_height);
 };
 
 template <typename T>

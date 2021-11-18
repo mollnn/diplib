@@ -22,7 +22,7 @@ public:
 
 protected:
 
-    T _pxInterpBilinear(float x, float y);
+    inline T _pxInterpBilinear(float x, float y);
 
 #ifdef IMG_ENABLE_AVX2
     static inline __m256 __8pxInterpBilinear_Avx2_ps(float *source_image_ps, __m256 xi, __m256 yi, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value);
@@ -47,8 +47,6 @@ protected:
 #ifdef IMG_ENABLE_AVX2
     ImgData<T> _transformAffine_Avx2_sep(const mat3 &transform_matrix, int target_width, int target_height);
     ImgData<T> _transformAffine_Avx2(const mat3 &transform_matrix, int target_width, int target_height);
-//    Fixed point version can be faster. Too tired to implement it :(
-//    ImgData<T> _transformAffine_Avx2_fixpt(const mat3 &transform_matrix, int target_width, int target_height);
 #endif
 
 #ifdef IMG_ENABLE_CUDA
