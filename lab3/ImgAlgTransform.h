@@ -402,6 +402,15 @@ ImgData<T> ImgAlgTransform<T>::_transformAffine_Avx2(const mat3 &transform_matri
 {
     ImgData<T> result(target_width, target_height, this->range_);
 
+    auto target_data_ptr = result.bits();
+    auto source_data_ptr = this->bits();
+
+    if (source_data_ptr == 0 || this->width_ == 0 || this->height_ == 0)
+    {
+        memset(target_data_ptr, 0, target_width * target_height * sizeof(T));
+        return result;
+    }
+
     mat3 transform_matrix_inverse = transform_matrix.inverse();
 
     float t11 = transform_matrix_inverse[0][0];
@@ -425,15 +434,6 @@ ImgData<T> ImgAlgTransform<T>::_transformAffine_Avx2(const mat3 &transform_matri
     __m256i bound_y_max = _mm256_set1_epi32(this->height_ - 1);
 
     __m256i deltas = _mm256_set1_epi32(8);
-
-    auto target_data_ptr = result.bits();
-    auto source_data_ptr = this->bits();
-
-    if (source_data_ptr == 0)
-    {
-        memset(target_data_ptr, 0, target_width * target_height * sizeof(T));
-        return result;
-    }
 
     // Cast image value to float (stupid but easy)
     float *source_image_ps = new float[source_img_size + 1]; // 末尾附加元素表示默认值
@@ -498,15 +498,13 @@ ImgData<T> ImgAlgTransform<T>::_transformAffine_Avx2(const mat3 &transform_matri
 template <typename T>
 ImgData<T> ImgAlgTransform<T>::_transformAffine(const mat3 &transform_matrix, int target_width, int target_height)
 {
-    // return _transformAffine_Baseline(transform_matrix, target_width, target_height);
 #ifdef IMG_ENABLE_CUDA
-
-    return _transformAffine_Cuda(transform_matrix, target_width, target_height);
-#elif defined IMG_ENABLE_AVX2
-    return _transformAffine_Avx2(transform_matrix, target_width, target_height);
-#else
-    return _transformAffine_Baseline(transform_matrix, target_width, target_height);
+//    return _transformAffine_Cuda(transform_matrix, target_width, target_height);
 #endif
+#ifdef IMG_ENABLE_AVX2
+    return _transformAffine_Avx2(transform_matrix, target_width, target_height);
+#endif
+    return _transformAffine_Fast(transform_matrix, target_width, target_height);
 }
 
 #ifdef IMG_ENABLE_CUDA
@@ -536,17 +534,17 @@ void ImgAlgTransform<T>::_transformAffine_Cuda_C(T *dest_ptr, T *src_ptr, float 
     if (std::is_same_v<T, uint8_t>)
     {
         __ImgAlgAffine_affineTransform_cuda_epu8(reinterpret_cast<uint8_t *>(dest_ptr), reinterpret_cast<uint8_t *>(src_ptr),
-                                                    mat, dest_width, dest_height, src_width, src_height, default_value);
+                                                 mat, dest_width, dest_height, src_width, src_height, default_value);
     }
     else if (std::is_same_v<T, uint16_t>)
     {
         __ImgAlgAffine_affineTransform_cuda_epu16(reinterpret_cast<uint16_t *>(dest_ptr), reinterpret_cast<uint16_t *>(src_ptr),
-                                                     mat, dest_width, dest_height, src_width, src_height, default_value);
+                                                  mat, dest_width, dest_height, src_width, src_height, default_value);
     }
     else if (std::is_same_v<T, float>)
     {
         __ImgAlgAffine_affineTransform_cuda_ps(reinterpret_cast<float *>(dest_ptr), reinterpret_cast<float *>(src_ptr),
-                                                  mat, dest_width, dest_height, src_width, src_height, default_value);
+                                               mat, dest_width, dest_height, src_width, src_height, default_value);
     }
     else
     {

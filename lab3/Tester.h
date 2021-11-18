@@ -45,7 +45,9 @@ private slots:
     void test_alg_conv2d_cuda_valid()
     {
         Img<float> img(100, 100, 255);
-        for(int i=0;i<100;i++) for(int j=0;j<100;j++) img.setPixel(i,j,0);
+        for (int i = 0; i < 100; i++)
+            for (int j = 0; j < 100; j++)
+                img.setPixel(i, j, 0);
         for (int i = 0; i < 1000; i++)
             img.setPixel(rand() % 100, rand() % 100, rand() % 256);
         Img<float> img_conv2d = img._conv2d_Baseline(img.__getLaplacianKernel2D(3));
@@ -91,6 +93,17 @@ private slots:
         }
     }
 
+    void test_alg_conv2d_cuda_3x3_benchmark()
+    {
+        Img<uint16_t> img(10000, 10000, 255);
+        for (int i = 0; i < 1000; i++)
+            img.setPixel(rand() % 10000, rand() % 10000, rand() % 256);
+        QBENCHMARK
+        {
+            Img<uint16_t> img_conv2d = img._conv2d_Cuda(img.__getLaplacianKernel2D(3));
+        }
+    }
+
     void test_alg_conv2d_fast_7x7_benchmark()
     {
         Img<uint16_t> img(10000, 10000, 255);
@@ -110,6 +123,17 @@ private slots:
         QBENCHMARK
         {
             Img<uint16_t> img_conv2d = img._conv2d_Avx2(img.__getLaplacianKernel2D(7));
+        }
+    }
+
+    void test_alg_conv2d_cuda_7x7_benchmark()
+    {
+        Img<uint16_t> img(10000, 10000, 255);
+        for (int i = 0; i < 1000; i++)
+            img.setPixel(rand() % 10000, rand() % 10000, rand() % 256);
+        QBENCHMARK
+        {
+            Img<uint16_t> img_conv2d = img._conv2d_Cuda(img.__getLaplacianKernel2D(7));
         }
     }
 
@@ -148,6 +172,16 @@ private slots:
         }
     }
 
+    void test_alg_conv2d_cuda_1x7_benchmark()
+    {
+        Img<uint16_t> img(10000, 10000, 255);
+        for (int i = 0; i < 1000; i++)
+            img.setPixel(rand() % 10000, rand() % 10000, rand() % 256);
+        QBENCHMARK
+        {
+            Img<uint16_t> img_conv2d = img._conv2d_Cuda(img.__getGaussianKernel1Dy(7, 0.1));
+        }
+    }
 
     void test_alg_conv2d_fast_1x21_benchmark()
     {
@@ -206,6 +240,16 @@ private slots:
         }
     }
 
+    void test_alg_conv2d_cuda_7x1_benchmark()
+    {
+        Img<uint16_t> img(10000, 10000, 255);
+        for (int i = 0; i < 1000; i++)
+            img.setPixel(rand() % 10000, rand() % 10000, rand() % 256);
+        QBENCHMARK
+        {
+            Img<uint16_t> img_conv2d = img._conv2d_Cuda(img.__getGaussianKernel1Dx(7, 0.1));
+        }
+    }
 
     void test_alg_conv2d_fast_21x1_benchmark()
     {

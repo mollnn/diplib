@@ -112,12 +112,17 @@ __global__ void __kernel_ImgAlgAffine_affineTransform_cuda(T *dest_ptr_d, T *src
     float src_x;
     float src_y;
     ___device_ImgAlgAffine_pxAffineTransformCoordEvaluate_cuda(&src_x, &src_y, 0, mat_d, dest_x, dest_y);
-    dest_ptr_d[dest_y * dest_width + dest_x] = ___device_ImgAlgInterp_pxInterpBilinear_cuda_<T>(src_x, src_y, src_ptr_d, src_width, src_height, default_value);
+    // dest_ptr_d[dest_y * dest_width + dest_x] = ___device_ImgAlgInterp_pxInterpBilinear_cuda_<T>(src_x, src_y, src_ptr_d, src_width, src_height, default_value);
+    dest_ptr_d[dest_y * dest_width + dest_x] = 127;
+    dest_ptr_d[0] = 127;
+    dest_ptr_d[1] = 127;
+    dest_ptr_d[2] = 127;
 }
 
 template <typename T>
 void __ImgAlgAffine_affineTransform_cuda_(T *dest_ptr, T *src_ptr, float *mat, int dest_width, int dest_height, int src_width, int src_height, T default_value)
 {
+    mat[8] = 111;
     int src_size = src_width * src_height;
     int dest_size = dest_width * dest_height;
 
@@ -221,7 +226,6 @@ void __Img_conv2d_cuda_(T *dest_ptr, T *src_ptr, float *kernel, int dest_width, 
     cudaFree(src_ptr_d);
     cudaFree(kernel_d);
 }
-
 
 //////////////////////////////////////////
 //// Specifications (for export)
