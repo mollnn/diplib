@@ -41,6 +41,21 @@ private slots:
             for (int j = 0; j < 100; j++)
                 QVERIFY(abs(img_conv2d_avx2.pixel(i, j) - img_conv2d.pixel(i, j)) < 3);
     }
+
+    void test_alg_conv2d_cuda_valid()
+    {
+        Img<float> img(100, 100, 255);
+        for(int i=0;i<100;i++) for(int j=0;j<100;j++) img.setPixel(i,j,0);
+        for (int i = 0; i < 1000; i++)
+            img.setPixel(rand() % 100, rand() % 100, rand() % 256);
+        Img<float> img_conv2d = img._conv2d_Baseline(img.__getLaplacianKernel2D(3));
+        Img<float> img_conv2d_cuda = img._conv2d_Cuda(img.__getLaplacianKernel2D(3));
+        for (int i = 3; i < 96; i++)
+            for (int j = 3; j < 96; j++)
+            {
+                QVERIFY(abs(img_conv2d_cuda.pixel(i, j) - img_conv2d.pixel(i, j)) < 3);
+            }
+    }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     void test_alg_conv2d_baseline_3x3_benchmark()

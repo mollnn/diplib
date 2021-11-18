@@ -498,6 +498,7 @@ ImgData<T> ImgAlgTransform<T>::_transformAffine_Avx2(const mat3 &transform_matri
 template <typename T>
 ImgData<T> ImgAlgTransform<T>::_transformAffine(const mat3 &transform_matrix, int target_width, int target_height)
 {
+    // return _transformAffine_Baseline(transform_matrix, target_width, target_height);
 #ifdef IMG_ENABLE_CUDA
 
     return _transformAffine_Cuda(transform_matrix, target_width, target_height);
@@ -534,17 +535,17 @@ void ImgAlgTransform<T>::_transformAffine_Cuda_C(T *dest_ptr, T *src_ptr, float 
     // Here's a very stupid substitution
     if (std::is_same_v<T, uint8_t>)
     {
-        __ImgAlgTransform_affineTransform_cuda_epu8(reinterpret_cast<uint8_t *>(dest_ptr), reinterpret_cast<uint8_t *>(src_ptr),
+        __ImgAlgAffine_affineTransform_cuda_epu8(reinterpret_cast<uint8_t *>(dest_ptr), reinterpret_cast<uint8_t *>(src_ptr),
                                                     mat, dest_width, dest_height, src_width, src_height, default_value);
     }
     else if (std::is_same_v<T, uint16_t>)
     {
-        __ImgAlgTransform_affineTransform_cuda_epi16(reinterpret_cast<uint16_t *>(dest_ptr), reinterpret_cast<uint16_t *>(src_ptr),
+        __ImgAlgAffine_affineTransform_cuda_epu16(reinterpret_cast<uint16_t *>(dest_ptr), reinterpret_cast<uint16_t *>(src_ptr),
                                                      mat, dest_width, dest_height, src_width, src_height, default_value);
     }
     else if (std::is_same_v<T, float>)
     {
-        __ImgAlgTransform_affineTransform_cuda_ps(reinterpret_cast<float *>(dest_ptr), reinterpret_cast<float *>(src_ptr),
+        __ImgAlgAffine_affineTransform_cuda_ps(reinterpret_cast<float *>(dest_ptr), reinterpret_cast<float *>(src_ptr),
                                                   mat, dest_width, dest_height, src_width, src_height, default_value);
     }
     else

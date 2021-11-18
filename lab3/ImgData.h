@@ -4,9 +4,16 @@
 #include <QDebug>
 #include <cmath>
 
-#include "xmmintrin.h"
-#include "immintrin.h"
-#include "ammintrin.h"
+#ifdef IMG_ENABLE_AVX2
+#include <xmmintrin.h>
+#include <immintrin.h>
+#include <ammintrin.h>
+#include <avx2intrin.h>
+#endif
+
+#ifdef IMG_ENABLE_CUDA
+#include "ImgAlg_Cuda.h"
+#endif
 
 template <typename T>
 class ImgData
@@ -84,6 +91,13 @@ public:
     ImgData<T> _conv2d_Fast(ImgData<float> kernel);
     ImgData<T> _conv2d_Avx2(ImgData<float> kernel);
 
+#ifdef IMG_ENABLE_CUDA
+    ImgData<T> _conv2d_Cuda(ImgData<float> kernel);
+
+    void _conv2d_Cuda_C(T *dest_ptr_d, T *src_ptr_d, float *kernel_d, int dest_width, int dest_height, int src_width, int src_height, int kernel_width, int kernel_height, T default_value);
+#endif
+
+protected:
     // Copy
     ImgData<T> _copySubImg(int x0, int y0, int target_width, int target_height);
 };
@@ -592,10 +606,11 @@ ImgData<T> ImgData<T>::_copySubImg(int x0, int y0, int target_width, int target_
 template <typename T>
 ImgData<T> ImgData<T>::_conv2d(ImgData<float> kernel)
 {
-    if (kernel.width() * kernel.height() >= 9 || kernel.height() >= 5)
-        return this->_conv2d_Avx2(kernel);
-    else
-        return this->_conv2d_Fast(kernel);
+    return this->_conv2d_Cuda(kernel);
+    // if (kernel.width() * kernel.height() >= 9 || kernel.height() >= 5)
+    //     return this->_conv2d_Avx2(kernel);
+    // else
+    //     return this->_conv2d_Fast(kernel);
 }
 
 template <typename T>
@@ -801,5 +816,49 @@ ImgData<T> ImgData<T>::_conv2d_Avx2(ImgData<float> kernel)
 
     return result;
 }
+
+#ifdef IMG_ENABLE_CUDA
+template <typename T>
+void ImgData<T>::_conv2d_Cuda_C(T *dest_ptr, T *src_ptr, float *kernel, int dest_width, int dest_height, int src_width, int src_height, int kernel_width, int kernel_height, T default_value)
+{
+    // Since difference of ABI between MSVC(nvcc only support on Windows) and MinGW, we cannot dllexport & dllimport a Cpp style function, let alone template
+    // Here's a very stupid substitution
+    if (std::is_same_v<T, uint8_t>)
+    {
+        __Img_conv2d_cuda_epu8(reinterpret_cast<uint8_t *>(dest_ptr), reinterpret_cast<uint8_t *>(src_ptr),
+                               kernel, dest_width, dest_height, src_width, src_height, kernel_width, kernel_height, default_value);
+    }
+    else if (std::is_same_v<T, uint16_t>)
+    {
+        __Img_conv2d_cuda_epu16(reinterpret_cast<uint16_t *>(dest_ptr), reinterpret_cast<uint16_t *>(src_ptr),
+                                kernel, dest_width, dest_height, src_width, src_height, kernel_width, kernel_height, default_value);
+    }
+    else if (std::is_same_v<T, float>)
+    {
+        __Img_conv2d_cuda_ps(reinterpret_cast<float *>(dest_ptr), reinterpret_cast<float *>(src_ptr),
+                             kernel, dest_width, dest_height, src_width, src_height, kernel_width, kernel_height, default_value);
+    }
+    else
+    {
+        throw("Unsupported data type.");
+    }
+}
+
+template <typename T>
+ImgData<T> ImgData<T>::_conv2d_Cuda(ImgData<float> kernel)
+{
+    ImgData<T> result(this->width_, this->height_, this->range_);
+
+    auto target_data_ptr = result.bits();
+    auto source_data_ptr = this->bits();
+    auto kernel_data_ptr = kernel.bits();
+
+    _conv2d_Cuda_C(target_data_ptr, source_data_ptr, kernel_data_ptr, this->width_, this->height_,
+                            this->width_, this->height_, kernel.width(), kernel.height(), 0);
+
+    return result;
+}
+
+#endif
 
 #endif // IMGDATA_H

@@ -29,7 +29,7 @@
 
 // 加速控制标志
 #ifndef IMG_ENABLE_CUDA
-//#define IMG_ENABLE_CUDA     // 注释该行以禁用 CUDA
+#define IMG_ENABLE_CUDA     // 注释该行以禁用 CUDA
 #endif
 #ifndef IMG_ENABLE_AVX2
 #define IMG_ENABLE_AVX2 // 注释该行以禁用 AVX2

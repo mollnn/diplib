@@ -2,7 +2,7 @@
 
 #include <QApplication>
 
-//#define _AUTOTEST_FLAG
+// #define _AUTOTEST_FLAG
 
 #ifndef _AUTOTEST_FLAG
 

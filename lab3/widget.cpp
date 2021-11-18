@@ -136,6 +136,8 @@ void Widget::_render()
                                 (-view_height + src_height) / 2 + view_offset_y_,
                                 view_width, view_height, view_rotation_, view_scale_);
 
+    // img_out_ = img_usm.cast<uint8_t>(255.0 / 4096, 0);
+
     img_plot_box_->imshow(img_out_.toQImage());
     this->_reLayout();
 }
