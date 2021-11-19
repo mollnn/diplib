@@ -2,7 +2,7 @@
 
 #include <QApplication>
 
- #define _AUTOTEST_FLAG
+// #define _AUTOTEST_FLAG
 
 #ifndef _AUTOTEST_FLAG
 
@@ -13,9 +13,6 @@ int main(int argc, char *argv[])
     w.showMaximized();
     return a.exec();
 
-//    Img<float> img;
-//    img = Img<float>::__getLaplacianKernel2D(3);
-//    img.debug();
 }
 
 #else

@@ -125,12 +125,12 @@ void Widget::_render()
     int src_width = img_in_.width();
     int src_height = img_in_.height();
 
-    ImgData<float> kernel = Img<float>::__getLaplacianKernel2D(3);
+    ImgData<float> kernel = Img<float>::getLaplacianKernel2D(3);
 
     // 就应用而言，可以缓存中间结果
     // 这里为了测试处理流程的整体性能，每次重新执行整个计算流程
     Img<uint16_t> img_denoise = img_in_.gaussianBlur(0.01 * smooth_sigma_);
-    Img<uint16_t> img_usm = img_denoise._unsharpMasking(kernel, -0.1 * usm_intensity_, usm_threshold_);
+    Img<uint16_t> img_usm = img_denoise.unsharpMasking(kernel, -0.1 * usm_intensity_, usm_threshold_);
     Img<uint8_t> img_graywnd = img_usm.applyGrayWindow<uint8_t>(gray_window_breadth_, gray_window_position_);
     img_out_ = img_graywnd.crop((-view_width + src_width) / 2 + view_offset_x_,
                                 (-view_height + src_height) / 2 + view_offset_y_,

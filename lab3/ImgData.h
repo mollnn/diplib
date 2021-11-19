@@ -30,7 +30,6 @@ protected:
 public:
     T _pixel(int x, int y, T default_value = 0);
 
-public:
     ImgData();
     ImgData(int width_, int height_, T range_);
     ImgData(const ImgData &img);
@@ -61,17 +60,18 @@ public:
     // 饱和运算的责任交给用户
     // uint16 -> float -> ... -> float -> clamped -> uint16
 
+public:
     // Algebra
-    ImgData<T> _add(const ImgData<T> &rhs);
-    ImgData<T> _subtract(const ImgData<T> &rhs);
-    ImgData<T> _amplify(float rhs);
-    ImgData<T> _inverse();
-    ImgData<T> _transpose();
-    ImgData<T> _mirrorX();
-    ImgData<T> _mirrorY();
-    ImgData<T> _mirrorXY();
-    ImgData<T> _multiply(const ImgData<T> &rhs);
-    ImgData<T> _clamp(T clamp_min, T clamp_max);
+    ImgData<T> add(const ImgData<T> &rhs);
+    ImgData<T> subtract(const ImgData<T> &rhs);
+    ImgData<T> amplify(float rhs);
+    ImgData<T> inverse();
+    ImgData<T> transpose();
+    ImgData<T> mirrorX();
+    ImgData<T> mirrorY();
+    ImgData<T> mirrorXY();
+    ImgData<T> multiply(const ImgData<T> &rhs);
+    ImgData<T> clamp(T clamp_min, T clamp_max);
 
     ImgData<T> operator+(const ImgData<T> &rhs);
     ImgData<T> operator-(const ImgData<T> &rhs);
@@ -86,10 +86,16 @@ public:
     ImgData<T> &operator/=(float rhs);
 
     // Conv
-    ImgData<T> _conv2d(ImgData<float> kernel);
+    ImgData<T> conv2d(ImgData<float> kernel);
+
+
+protected:
     ImgData<T> _conv2d_Baseline(ImgData<float> kernel);
     ImgData<T> _conv2d_Fast(ImgData<float> kernel);
+
+#ifdef IMG_ENABLE_AVX2
     ImgData<T> _conv2d_Avx2(ImgData<float> kernel);
+#endif
 
 #ifdef IMG_ENABLE_CUDA
     ImgData<T> _conv2d_Cuda(ImgData<float> kernel);
@@ -295,7 +301,7 @@ void ImgData<T>::debug()
 }
 
 template <typename T>
-ImgData<T> ImgData<T>::_add(const ImgData<T> &rhs)
+ImgData<T> ImgData<T>::add(const ImgData<T> &rhs)
 {
     assert(this->width() == rhs.width());
     assert(this->height() == rhs.height());
@@ -315,7 +321,7 @@ ImgData<T> ImgData<T>::_add(const ImgData<T> &rhs)
 }
 
 template <typename T>
-ImgData<T> ImgData<T>::_subtract(const ImgData<T> &rhs)
+ImgData<T> ImgData<T>::subtract(const ImgData<T> &rhs)
 {
     assert(this->width() == rhs.width());
     assert(this->height() == rhs.height());
@@ -335,7 +341,7 @@ ImgData<T> ImgData<T>::_subtract(const ImgData<T> &rhs)
 }
 
 template <typename T>
-ImgData<T> ImgData<T>::_amplify(float rhs)
+ImgData<T> ImgData<T>::amplify(float rhs)
 {
     ImgData<T> result(this->width(), this->height(), this->range());
 
@@ -352,7 +358,7 @@ ImgData<T> ImgData<T>::_amplify(float rhs)
 }
 
 template <typename T>
-ImgData<T> ImgData<T>::_inverse()
+ImgData<T> ImgData<T>::inverse()
 {
     ImgData<T> result(this->width(), this->height(), this->range());
 
@@ -369,7 +375,7 @@ ImgData<T> ImgData<T>::_inverse()
 }
 
 template <typename T>
-ImgData<T> ImgData<T>::_transpose()
+ImgData<T> ImgData<T>::transpose()
 {
     ImgData<T> result(this->height(), this->width(), this->range());
 
@@ -386,7 +392,7 @@ ImgData<T> ImgData<T>::_transpose()
 }
 
 template <typename T>
-ImgData<T> ImgData<T>::_mirrorX()
+ImgData<T> ImgData<T>::mirrorX()
 {
     ImgData<T> result(this->width(), this->height(), this->range());
 
@@ -403,7 +409,7 @@ ImgData<T> ImgData<T>::_mirrorX()
 }
 
 template <typename T>
-ImgData<T> ImgData<T>::_mirrorY()
+ImgData<T> ImgData<T>::mirrorY()
 {
     ImgData<T> result(this->width(), this->height(), this->range());
 
@@ -420,7 +426,7 @@ ImgData<T> ImgData<T>::_mirrorY()
 }
 
 template <typename T>
-ImgData<T> ImgData<T>::_mirrorXY()
+ImgData<T> ImgData<T>::mirrorXY()
 {
     ImgData<T> result(this->width(), this->height(), this->range());
 
@@ -437,7 +443,7 @@ ImgData<T> ImgData<T>::_mirrorXY()
 }
 
 template <typename T>
-ImgData<T> ImgData<T>::_multiply(const ImgData<T> &rhs)
+ImgData<T> ImgData<T>::multiply(const ImgData<T> &rhs)
 {
     int n = this->height();
     int m = this->width();
@@ -463,7 +469,7 @@ ImgData<T> ImgData<T>::_multiply(const ImgData<T> &rhs)
 }
 
 template <typename T>
-ImgData<T> ImgData<T>::_clamp(T clamp_min, T clamp_max)
+ImgData<T> ImgData<T>::clamp(T clamp_min, T clamp_max)
 {
     ImgData<T> result(this->width(), this->height(), this->range_);
 
@@ -487,31 +493,31 @@ ImgData<T> ImgData<T>::_clamp(T clamp_min, T clamp_max)
 template <typename T>
 ImgData<T> ImgData<T>::operator+(const ImgData<T> &rhs)
 {
-    return this->_add(rhs);
+    return this->add(rhs);
 }
 
 template <typename T>
 ImgData<T> ImgData<T>::operator-(const ImgData<T> &rhs)
 {
-    return this->_subtract(rhs);
+    return this->subtract(rhs);
 }
 
 template <typename T>
 ImgData<T> ImgData<T>::operator*(const ImgData<T> &rhs)
 {
-    return this->_multiply(rhs);
+    return this->multiply(rhs);
 }
 
 template <typename T>
 ImgData<T> ImgData<T>::operator*(float rhs)
 {
-    return this->_amplify(rhs);
+    return this->amplify(rhs);
 }
 
 template <typename T>
 ImgData<T> ImgData<T>::operator/(float rhs)
 {
-    return this->_amplify(1.0f / rhs);
+    return this->amplify(1.0f / rhs);
 }
 
 template <typename T>
@@ -604,13 +610,21 @@ ImgData<T> ImgData<T>::_copySubImg(int x0, int y0, int target_width, int target_
 }
 
 template <typename T>
-ImgData<T> ImgData<T>::_conv2d(ImgData<float> kernel)
+ImgData<T> ImgData<T>::conv2d(ImgData<float> kernel)
 {
-    return this->_conv2d_Cuda(kernel);
-    // if (kernel.width() * kernel.height() >= 9 || kernel.height() >= 5)
-    //     return this->_conv2d_Avx2(kernel);
-    // else
-    //     return this->_conv2d_Fast(kernel);
+
+    if (kernel.width() * kernel.height() >= 9 || kernel.height() >= 5)
+    {
+#ifdef IMG_ENABLE_AVX2
+        return this->_conv2d_Avx2(kernel);
+#endif
+#ifdef IMG_ENABLE_CUDA
+        return this->_conv2d_Cuda(kernel);
+#endif
+        return this->_conv2d_Fast(kernel);
+    }
+    return this->_conv2d_Fast(kernel);
+
 }
 
 template <typename T>
@@ -688,11 +702,13 @@ ImgData<T> ImgData<T>::_conv2d_Fast(ImgData<float> kernel)
     return result;
 }
 
+
+#ifdef IMG_ENABLE_AVX2
 template <typename T>
 ImgData<T> ImgData<T>::_conv2d_Avx2(ImgData<float> kernel)
 {
     // 卷积核翻转
-    kernel = kernel._mirrorXY();
+    kernel = kernel.mirrorXY();
 
     ImgData<T> result(this->width_, this->height_, this->range_);
 
@@ -816,6 +832,7 @@ ImgData<T> ImgData<T>::_conv2d_Avx2(ImgData<float> kernel)
 
     return result;
 }
+#endif
 
 #ifdef IMG_ENABLE_CUDA
 template <typename T>

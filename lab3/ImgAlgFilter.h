@@ -12,16 +12,16 @@ public:
     ImgAlgFilter(const ImgData<T> &img);
     ImgAlgFilter(ImgData<T> &&img);
 
-    static ImgData<float> __getGaussianKernel1Dx(int kernel_size, float sigma);
-    static ImgData<float> __getGaussianKernel1Dy(int kernel_size, float sigma);
-    static ImgData<float> __getGaussianKernel2D(int kernel_size, float sigma);
-    static ImgData<float> __getGaussianHpKernel1Dx(int kernel_size, float sigma);
-    static ImgData<float> __getGaussianHpKernel1Dy(int kernel_size, float sigma);
-    static ImgData<float> __getGaussianHpKernel2D(int kernel_size, float sigma);
-    static ImgData<float> __getLaplacianKernel2D(int kernel_size);
+    static ImgData<float> getGaussianKernel1Dx(int kernel_size, float sigma);
+    static ImgData<float> getGaussianKernel1Dy(int kernel_size, float sigma);
+    static ImgData<float> getGaussianKernel2D(int kernel_size, float sigma);
+    static ImgData<float> getGaussianHpKernel1Dx(int kernel_size, float sigma);
+    static ImgData<float> getGaussianHpKernel1Dy(int kernel_size, float sigma);
+    static ImgData<float> getGaussianHpKernel2D(int kernel_size, float sigma);
+    static ImgData<float> getLaplacianKernel2D(int kernel_size);
 
-    ImgData<T> _filter(ImgData<float> kernel);
-    ImgData<T> _filter(ImgData<float> kernel_x, ImgData<float> kernel_y);
+    ImgData<T> filter(ImgData<float> kernel);
+    ImgData<T> filter(ImgData<float> kernel_x, ImgData<float> kernel_y);
 
 protected:
 };
@@ -42,7 +42,7 @@ ImgAlgFilter<T>::ImgAlgFilter(ImgData<T> &&img) : ImgData<T>(img)
 }
 
 template <typename T>
-ImgData<float> ImgAlgFilter<T>::__getGaussianKernel1Dx(int kernel_size, float sigma)
+ImgData<float> ImgAlgFilter<T>::getGaussianKernel1Dx(int kernel_size, float sigma)
 {
     // 建议 kernel_size > 1 / sigma
     // sigma 是**频域**高斯函数的标准差
@@ -71,53 +71,53 @@ ImgData<float> ImgAlgFilter<T>::__getGaussianKernel1Dx(int kernel_size, float si
 }
 
 template <typename T>
-ImgData<float> ImgAlgFilter<T>::__getGaussianKernel1Dy(int kernel_size, float sigma)
+ImgData<float> ImgAlgFilter<T>::getGaussianKernel1Dy(int kernel_size, float sigma)
 {
-    ImgData<float> kernel_x = __getGaussianKernel1Dx(kernel_size, sigma);
-    return kernel_x._transpose();
+    ImgData<float> kernel_x = getGaussianKernel1Dx(kernel_size, sigma);
+    return kernel_x.transpose();
 }
 
 template <typename T>
-ImgData<float> ImgAlgFilter<T>::__getGaussianKernel2D(int kernel_size, float sigma)
+ImgData<float> ImgAlgFilter<T>::getGaussianKernel2D(int kernel_size, float sigma)
 {
     // 可以进一步扩充非各项同性的情况
-    ImgData<float> kernel_x = __getGaussianKernel1Dx(kernel_size, sigma);
-    ImgData<float> kernel_y = __getGaussianKernel1Dy(kernel_size, sigma);
-    return kernel_y._multiply(kernel_x);
+    ImgData<float> kernel_x = getGaussianKernel1Dx(kernel_size, sigma);
+    ImgData<float> kernel_y = getGaussianKernel1Dy(kernel_size, sigma);
+    return kernel_y.multiply(kernel_x);
 }
 
 template <typename T>
-ImgData<float> ImgAlgFilter<T>::__getGaussianHpKernel1Dx(int kernel_size, float sigma)
+ImgData<float> ImgAlgFilter<T>::getGaussianHpKernel1Dx(int kernel_size, float sigma)
 {
     // 建议 kernel_size > 1 / sigma
     // sigma 是**频域**高斯函数的标准差
     assert(kernel_size % 2 == 1);
 
-    ImgData<float> kernel = __getGaussianKernel1Dx(kernel_size, sigma);
+    ImgData<float> kernel = getGaussianKernel1Dx(kernel_size, sigma);
     int center = kernel_size / 2;
     kernel.setPixel(center, 0, kernel.pixel(center, 0) - 1);
 
-    return kernel._amplify(-1);
+    return kernel.amplify(-1);
 }
 
 template <typename T>
-ImgData<float> ImgAlgFilter<T>::__getGaussianHpKernel1Dy(int kernel_size, float sigma)
+ImgData<float> ImgAlgFilter<T>::getGaussianHpKernel1Dy(int kernel_size, float sigma)
 {
-    ImgData<float> kernel_x = __getGaussianHpKernel1Dx(kernel_size, sigma);
-    return kernel_x._transpose();
+    ImgData<float> kernel_x = getGaussianHpKernel1Dx(kernel_size, sigma);
+    return kernel_x.transpose();
 }
 
 template <typename T>
-ImgData<float> ImgAlgFilter<T>::__getGaussianHpKernel2D(int kernel_size, float sigma)
+ImgData<float> ImgAlgFilter<T>::getGaussianHpKernel2D(int kernel_size, float sigma)
 {
     // 可以进一步扩充非各项同性的情况
-    ImgData<float> kernel_x = __getGaussianHpKernel1Dx(kernel_size, sigma);
-    ImgData<float> kernel_y = __getGaussianHpKernel1Dy(kernel_size, sigma);
-    return kernel_y._multiply(kernel_x);
+    ImgData<float> kernel_x = getGaussianHpKernel1Dx(kernel_size, sigma);
+    ImgData<float> kernel_y = getGaussianHpKernel1Dy(kernel_size, sigma);
+    return kernel_y.multiply(kernel_x);
 }
 
 template <typename T>
-ImgData<float> ImgAlgFilter<T>::__getLaplacianKernel2D(int kernel_size)
+ImgData<float> ImgAlgFilter<T>::getLaplacianKernel2D(int kernel_size)
 {
     assert(kernel_size > 1 && kernel_size % 2 == 1);
     ImgData<float> kernel(kernel_size, kernel_size, 1);
@@ -129,16 +129,16 @@ ImgData<float> ImgAlgFilter<T>::__getLaplacianKernel2D(int kernel_size)
 }
 
 template <typename T>
-ImgData<T> ImgAlgFilter<T>::_filter(ImgData<float> kernel)
+ImgData<T> ImgAlgFilter<T>::filter(ImgData<float> kernel)
 {
-    return this->_conv2d(kernel);
+    return this->conv2d(kernel);
 }
 
 template <typename T>
-ImgData<T> ImgAlgFilter<T>::_filter(ImgData<float> kernel_x, ImgData<float> kernel_y)
+ImgData<T> ImgAlgFilter<T>::filter(ImgData<float> kernel_x, ImgData<float> kernel_y)
 {
-    ImgData<T> tmp = this->_conv2d(kernel_x);
-    return tmp._conv2d(kernel_y);
+    ImgData<T> tmp = this->conv2d(kernel_x);
+    return tmp.conv2d(kernel_y);
 }
 
 #endif // IMGALGFILTER_H

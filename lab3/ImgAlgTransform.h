@@ -21,38 +21,26 @@ public:
 
 protected:
     inline T _pxInterpBilinear(float x, float y);
-#ifdef IMG_ENABLE_AVX2
-    static inline __m256 __8pxInterpBilinear_Avx2_ps(float *source_image_ps, __m256 xi, __m256 yi, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value);
-#endif
     ImgData<T> _interpBilinear(float *x_coords, float *y_coords, int target_width, int target_height);
     ImgData<T> _interpBilinear_Baseline(float *x_coords, float *y_coords, int target_width, int target_height);
-#ifdef IMG_ENABLE_AVX2
-    ImgData<T> _interpBilinear_Avx2(float *x_coords, float *y_coords, int target_width, int target_height);
-#endif
-#ifdef IMG_ENABLE_CUDA
-    ImgData<T> _interpBilinear_Cuda(float *x_coords, float *y_coords, int target_width, int target_height);
-#endif
-private:
-#ifdef IMG_ENABLE_CUDA
-    void _interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float *x_coords, float *y_coords, int dest_width, int dest_height, int src_width, int src_height, T default_value);
-#endif
-
-protected:
     ImgData<T> _transformAffine(const mat3 &transform_matrix, int target_width, int target_height);
     ImgData<T> _transformAffine_Baseline(const mat3 &transform_matrix, int target_width, int target_height);
     ImgData<T> _transformAffine_Fast(const mat3 &transform_matrix, int target_width, int target_height);
+
 #ifdef IMG_ENABLE_AVX2
+    static inline __m256 __8pxInterpBilinear_Avx2_ps(float *source_image_ps, __m256 xi, __m256 yi, __m256i widths, __m256i bound_x_max, __m256i bound_y_max, __m256i idx_default_value);
+    ImgData<T> _interpBilinear_Avx2(float *x_coords, float *y_coords, int target_width, int target_height);
     ImgData<T> _transformAffine_Avx2_sep(const mat3 &transform_matrix, int target_width, int target_height);
     ImgData<T> _transformAffine_Avx2(const mat3 &transform_matrix, int target_width, int target_height);
 #endif
 
 #ifdef IMG_ENABLE_CUDA
     ImgData<T> _transformAffine_Cuda(const mat3 &transform_matrix, int target_width, int target_height);
-
+    ImgData<T> _interpBilinear_Cuda(float *x_coords, float *y_coords, int target_width, int target_height);
 private:
+    void _interpBilinear_Cuda_C(T *dest_ptr, T *src_ptr, float *x_coords, float *y_coords, int dest_width, int dest_height, int src_width, int src_height, T default_value);
     void _transformAffine_Cuda_C(T *dest_ptr, T *src_ptr, float *mat, int dest_width, int dest_height, int src_width, int src_height, T default_value);
 #endif
-private:
 };
 
 template <typename T>
