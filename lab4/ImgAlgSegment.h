@@ -1,0 +1,4 @@
+#ifndef IMGALGSEGMENT_H
+#define IMGALGSEGMENT_H
+
+#endif // IMGALGSEGMENT_H
