@@ -45,6 +45,7 @@ SOURCES += \
 HEADERS += \
     ImgAlgFilter.h \
     ImgAlgMapping.h \
+    ImgAlgSegment.h \
     ImgAlgTransform.h \
     ImgData.h \
     ImgFuncBlurSharpen.h \

@@ -47,9 +47,10 @@
 #include "ImgFuncGeoTransform.h"
 #include "ImgFuncGrayWindow.h"
 #include "ImgFuncBlurSharpen.h"
+#include "ImgAlgSegment.h"
 
 template <typename T>
-class Img : public virtual ImgConvert<T>, public virtual ImgFuncGeoTransform<T>, public virtual ImgFuncGrayWindow<T>, public virtual ImgFuncBlurSharpen<T>
+class Img : public virtual ImgConvert<T>, public virtual ImgFuncGeoTransform<T>, public virtual ImgFuncGrayWindow<T>, public virtual ImgFuncBlurSharpen<T>, public virtual ImgAlgSegment<T>
 {
 public:
     Img() {}

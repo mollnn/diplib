@@ -29,6 +29,7 @@ protected:
 
 public:
     T _pixel(int x, int y, T default_value = 0);
+    T _pixelNearest(int x, int y);
 
     ImgData();
     ImgData(int width_, int height_, T range_);
@@ -63,6 +64,7 @@ public:
 public:
     // Algebra
     ImgData<T> add(const ImgData<T> &rhs);
+    ImgData<T> add(float rhs);
     ImgData<T> subtract(const ImgData<T> &rhs);
     ImgData<T> amplify(float rhs);
     ImgData<T> inverse();
@@ -74,10 +76,14 @@ public:
     ImgData<T> clamp(T clamp_min, T clamp_max);
 
     ImgData<T> operator+(const ImgData<T> &rhs);
+    ImgData<T> operator+(float rhs);
     ImgData<T> operator-(const ImgData<T> &rhs);
     ImgData<T> operator*(const ImgData<T> &rhs);
     ImgData<T> operator*(float rhs);
     ImgData<T> operator/(float rhs);
+
+    ImgData<T> log(float base, float input_bias = 1);
+    ImgData<T> exp(float base, float output_bias = -1);
 
     ImgData<T> &operator+=(const ImgData<T> &rhs);
     ImgData<T> &operator-=(const ImgData<T> &rhs);
@@ -87,7 +93,6 @@ public:
 
     // Conv
     ImgData<T> conv2d(ImgData<float> kernel);
-
 
 protected:
     ImgData<T> _conv2d_Baseline(ImgData<float> kernel);
@@ -105,7 +110,7 @@ protected:
 
 protected:
     // Copy
-    ImgData<T> _copySubImg(int x0, int y0, int target_width, int target_height);
+    ImgData<T> _copySubImg(int x0, int y0, int target_width, int target_height, bool nearest_padding = false);
 };
 
 template <typename T>
@@ -231,6 +236,16 @@ T ImgData<T>::_pixel(int x, int y, T default_value)
 }
 
 template <typename T>
+T ImgData<T>::_pixelNearest(int x, int y)
+{
+    x = std::min(x, this->width_ - 1);
+    y = std::min(y, this->height_ - 1);
+    x = std::max(x, 0);
+    y = std::max(y, 0);
+    return this->pixel(x, y);
+}
+
+template <typename T>
 void ImgData<T>::setRange(T range)
 {
     if (range == 0)
@@ -314,6 +329,23 @@ ImgData<T> ImgData<T>::add(const ImgData<T> &rhs)
         for (int j = 0; j < this->width(); j++)
         {
             result.setPixel(j, i, this->pixel(j, i) + rhs.pixel(j, i));
+        }
+    }
+
+    return result;
+}
+
+template <typename T>
+ImgData<T> ImgData<T>::add(float rhs)
+{
+    ImgData<T> result(this->width(), this->height(), this->range());
+
+#pragma omp parallel for
+    for (int i = 0; i < this->height(); i++)
+    {
+        for (int j = 0; j < this->width(); j++)
+        {
+            result.setPixel(j, i, this->pixel(j, i) + rhs);
         }
     }
 
@@ -497,6 +529,12 @@ ImgData<T> ImgData<T>::operator+(const ImgData<T> &rhs)
 }
 
 template <typename T>
+ImgData<T> ImgData<T>::operator+(float rhs)
+{
+    return this->add(rhs);
+}
+
+template <typename T>
 ImgData<T> ImgData<T>::operator-(const ImgData<T> &rhs)
 {
     return this->subtract(rhs);
@@ -558,7 +596,45 @@ ImgData<T> &ImgData<T>::operator/=(float rhs)
 }
 
 template <typename T>
-ImgData<T> ImgData<T>::_copySubImg(int x0, int y0, int target_width, int target_height)
+ImgData<T> ImgData<T>::log(float base, float input_bias)
+{
+    ImgData<T> result(this->width(), this->height(), this->range_);
+
+    float log_base = std::log(base);
+
+#pragma omp parallel for
+    for (int i = 0; i < this->height(); i++)
+    {
+        for (int j = 0; j < this->width(); j++)
+        {
+            T value = std::log(this->pixel(j, i) + input_bias) / log_base;
+            result.setPixel(j, i, value);
+        }
+    }
+
+    return result;
+}
+
+template <typename T>
+ImgData<T> ImgData<T>::exp(float base, float output_bias)
+{
+    ImgData<T> result(this->width(), this->height(), this->range_);
+
+#pragma omp parallel for
+    for (int i = 0; i < this->height(); i++)
+    {
+        for (int j = 0; j < this->width(); j++)
+        {
+            T value = std::pow(base, this->pixel(j, i)) + output_bias;
+            result.setPixel(j, i, value);
+        }
+    }
+
+    return result;
+}
+
+template <typename T>
+ImgData<T> ImgData<T>::_copySubImg(int x0, int y0, int target_width, int target_height, bool nearest_padding)
 {
     ImgData<T> result(target_width, target_height, this->range_);
     memset(result.bits(), 0, target_width * target_height * sizeof(T));
@@ -604,6 +680,29 @@ ImgData<T> ImgData<T>::_copySubImg(int x0, int y0, int target_width, int target_
             memcpy(result.bits() + i * target_width + target_x_begin,
                    this->data_ + y1 * this->width_ + source_x_begin,
                    (source_x_end - source_x_begin) * sizeof(T));
+            // TODO: 修改为用 memcpy 和 memset 实现
+            if (nearest_padding)
+            {
+                for (int j = 0; j + x0 < 0; j++)
+                {
+                    result.setPixel(j, i, this->_pixelNearest(j + x0, i + y0));
+                }
+                for (int j = this->width_ - x0; j < target_width; j++)
+                {
+                    result.setPixel(j, i, this->_pixelNearest(j + x0, i + y0));
+                }
+            }
+        }
+        else
+        {
+            // TODO: 修改为用 memcpy 和 memset 实现
+            if (nearest_padding)
+            {
+                for (int j = 0; j < target_width; j++)
+                {
+                    result.setPixel(j, i, this->_pixelNearest(j + x0, i + y0));
+                }
+            }
         }
     }
     return result;
@@ -624,7 +723,6 @@ ImgData<T> ImgData<T>::conv2d(ImgData<float> kernel)
         return this->_conv2d_Fast(kernel);
     }
     return this->_conv2d_Fast(kernel);
-
 }
 
 template <typename T>
@@ -673,7 +771,7 @@ ImgData<T> ImgData<T>::_conv2d_Fast(ImgData<float> kernel)
     int result_width = result.width();
     int result_height = result.height();
 
-    ImgData<T> image_padding = this->_copySubImg(-kernel_width_half, -kernel_height_half, image_padding_width, image_padding_height);
+    ImgData<T> image_padding = this->_copySubImg(-kernel_width_half, -kernel_height_half, image_padding_width, image_padding_height, true);
 
     T *image_padding_ptr = image_padding.bits();
     T *image_result_ptr = result.bits();
@@ -702,7 +800,6 @@ ImgData<T> ImgData<T>::_conv2d_Fast(ImgData<float> kernel)
     return result;
 }
 
-
 #ifdef IMG_ENABLE_AVX2
 template <typename T>
 ImgData<T> ImgData<T>::_conv2d_Avx2(ImgData<float> kernel)
@@ -725,7 +822,7 @@ ImgData<T> ImgData<T>::_conv2d_Avx2(ImgData<float> kernel)
     int result_width_r8 = result_width / 8 * 8;
     int result_height = result.height();
 
-    ImgData<T> image_padding = this->_copySubImg(-kernel_width_half, -kernel_height_half, image_padding_width, image_padding_height);
+    ImgData<T> image_padding = this->_copySubImg(-kernel_width_half, -kernel_height_half, image_padding_width, image_padding_height, true);
 
     T *image_padding_ptr = image_padding.bits();
     T *image_result_ptr = result.bits();
@@ -840,6 +937,8 @@ void ImgData<T>::_conv2d_Cuda_C(T *dest_ptr, T *src_ptr, float *kernel, int dest
 {
     // Since difference of ABI between MSVC(nvcc only support on Windows) and MinGW, we cannot dllexport & dllimport a Cpp style function, let alone template
     // Here's a very stupid substitution
+
+    // TODO: 修改为 Nearest Padding（当前为 Zero Padding）
     if (std::is_same_v<T, uint8_t>)
     {
         __Img_conv2d_cuda_epu8(reinterpret_cast<uint8_t *>(dest_ptr), reinterpret_cast<uint8_t *>(src_ptr),
@@ -871,7 +970,7 @@ ImgData<T> ImgData<T>::_conv2d_Cuda(ImgData<float> kernel)
     auto kernel_data_ptr = kernel.bits();
 
     _conv2d_Cuda_C(target_data_ptr, source_data_ptr, kernel_data_ptr, this->width_, this->height_,
-                            this->width_, this->height_, kernel.width(), kernel.height(), 0);
+                   this->width_, this->height_, kernel.width(), kernel.height(), 0);
 
     return result;
 }

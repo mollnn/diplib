@@ -43,42 +43,26 @@ protected:
 private:
     QString filename_in_;
     QString filename_out_;
-    Img<uint16_t> img_in_;
+    Img<uint8_t> img_in_;
     Img<uint8_t> img_out_;
+    Img<uint8_t> img_render_;
     int view_offset_x_;
     int view_offset_y_;
     double view_scale_;
     double view_rotation_;
 
-    int gray_window_breadth_;
-    int gray_window_position_;
-
-    int usm_intensity_;
-    int usm_threshold_;
     int smooth_sigma_;
 
     bool is_ctrl_pressed_;
 
     QImagePlotBox *img_plot_box_;
 
-    QLabel *label_gray_window_breadth_;
-    QLabel *label_gray_window_position_;
-    QLabel *label_usm_intensity_;
-    QLabel *label_usm_threshold_;
     QLabel *label_smooth_sigma_;
     QLabel *label_tip_;
 
-    QSlider *slider_gray_window_breadth_;
-    QSlider *slider_gray_window_position_;
-    QSlider *slider_usm_intensity_;
-    QSlider *slider_usm_threshold_;
     QSlider *slider_smooth_sigma_;
-
-    QSpinBox *spinbox_gray_window_breadth_;
-    QSpinBox *spinbox_gray_window_position_;
-    QSpinBox *spinbox_usm_intensity_;
-    QSpinBox *spinbox_usm_threshold_;
-    QSpinBox *spinbox_smooth_sigma_;;
+    QSpinBox *spinbox_smooth_sigma_;
+    ;
 
     QPushButton *button_open_;
 
