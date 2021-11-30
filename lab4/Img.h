@@ -35,7 +35,7 @@
 /// Avx2/Cuda(使用数据并行方法优化后的版本)
 ///////////////////////////////////////////////
 
-// 加速控制标志
+// 加速控制标志  
 #ifndef IMG_ENABLE_CUDA
 //#define IMG_ENABLE_CUDA     // 注释该行以禁用 CUDA
 #endif
@@ -47,10 +47,10 @@
 #include "ImgFuncGeoTransform.h"
 #include "ImgFuncGrayWindow.h"
 #include "ImgFuncBlurSharpen.h"
-#include "ImgAlgSegment.h"
+#include "ImgFuncSegment.h"
 
 template <typename T>
-class Img : public virtual ImgConvert<T>, public virtual ImgFuncGeoTransform<T>, public virtual ImgFuncGrayWindow<T>, public virtual ImgFuncBlurSharpen<T>, public virtual ImgAlgSegment<T>
+class Img : public virtual ImgConvert<T>, public virtual ImgFuncGeoTransform<T>, public virtual ImgFuncGrayWindow<T>, public virtual ImgFuncBlurSharpen<T>, public virtual ImgFuncSegment<T>
 {
 public:
     Img() {}

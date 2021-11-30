@@ -934,7 +934,7 @@ ImgData<T> ImgData<T>::_conv2d_Avx2(ImgData<float> kernel)
 #ifdef IMG_ENABLE_CUDA
 template <typename T>
 void ImgData<T>::_conv2d_Cuda_C(T *dest_ptr, T *src_ptr, float *kernel, int dest_width, int dest_height, int src_width, int src_height, int kernel_width, int kernel_height, T default_value)
-{
+{  
     // Since difference of ABI between MSVC(nvcc only support on Windows) and MinGW, we cannot dllexport & dllimport a Cpp style function, let alone template
     // Here's a very stupid substitution
 

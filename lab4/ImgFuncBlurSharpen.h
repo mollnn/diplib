@@ -33,11 +33,11 @@ ImgFuncBlurSharpen<T>::ImgFuncBlurSharpen(ImgData<T> &&img) : ImgData<T>(img)
 {
 }
 
-
 template <typename T>
 ImgData<T> ImgFuncBlurSharpen<T>::gaussianBlur(float sigma)
 {
     int kernel_size = 1.0 / sigma + 1;
+    kernel_size = std::min(kernel_size, 1000);
     if (kernel_size % 2 == 0)
         kernel_size += 1;
 
@@ -71,7 +71,7 @@ ImgData<T> ImgFuncBlurSharpen<T>::unsharpMasking(ImgData<float> filter_kernel, f
 template <typename T>
 ImgData<T> ImgFuncBlurSharpen<T>::backgroundCorrection(float gaussian_sigma, bool log_space)
 {
-    if(log_space)
+    if (log_space)
     {
         ImgFuncBlurSharpen<float> a = this->template cast<float>();
         ImgFuncBlurSharpen<float> b = a.log(2);

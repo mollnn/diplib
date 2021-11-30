@@ -53,6 +53,7 @@ HEADERS += \
     ImgFuncGrayWindow.h \
     ImgConvert.h \
     Img.h \
+    ImgFuncSegment.h \
     ImgUtilTransformMatrix.h \
     ImgUtil_mat3.h \
     ImgUtil_mathheader.h \
