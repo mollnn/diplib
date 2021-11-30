@@ -74,6 +74,7 @@ private:
     
 
     QPushButton *button_open_;
+    QPushButton *button_save_;
 
     QGridLayout *grid_layout_;
 };

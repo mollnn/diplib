@@ -56,14 +56,23 @@ Widget::Widget(QWidget *parent)
     spinbox_background_sigma_->setRange(1, 20);
 
     button_open_ = new QPushButton(this);
-    button_open_->setText("打开文件");
+    button_open_->setText("打开图像");
+
+    button_save_ = new QPushButton(this);
+    button_save_->setText("保存结果");
 
     filename_in_ = "D:/seed.bmp";
 
     connect(button_open_, &QPushButton::clicked, [&]()
             {
-                filename_in_ = QFileDialog::getOpenFileName(this, tr("Open Image"), "/home/jana", tr("BMP Image Files (*.bmp)"));
+                filename_in_ = QFileDialog::getOpenFileName(this, tr("Open Image"), "/home/jana", tr("Bitmap (*.bmp)"));
                 this->_loadImage();
+            });
+
+    connect(button_save_, &QPushButton::clicked, [&]()
+            {
+                filename_out_ = QFileDialog::getSaveFileName(this, tr("Save Image"), "/home/jana", tr("Bitmap (*.bmp)"));
+                this->_saveImage();
             });
 
     connect(checkbox_overlap_, &QCheckBox::stateChanged, [&]()
@@ -196,7 +205,7 @@ void Widget::_saveImage()
     }
     catch (...)
     {
-        qDebug() << "fail to load image.";
+        qDebug() << "fail to save image.";
     }
 }
 
@@ -211,7 +220,8 @@ void Widget::_reLayout()
     grid_layout_->addWidget(slider_smooth_sigma_, 5, 1, 1, 5);
     grid_layout_->addWidget(spinbox_smooth_sigma_, 5, 6, 1, 1);
 
-    grid_layout_->addWidget(button_open_, 6, 3, 1, 1);
+    grid_layout_->addWidget(button_open_, 6, 1, 1, 1);
+    grid_layout_->addWidget(button_save_, 6, 4, 1, 1);
     grid_layout_->addWidget(label_tip_, 7, 0, 1, 6);
     grid_layout_->addWidget(checkbox_overlap_, 7, 6, 1, 1);
 
